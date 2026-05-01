@@ -171,7 +171,32 @@ fn install(rawpkg: &str) {
         content_only: false,
         ..Default::default()
     };
+    if Path::new(&format!("{}.pre-install", pkg)).exists() {
+        let pre_install = format!("./{}.pre-install", pkg);
+        Command::new("bash")
+        .args(["-c", &pre_install])
+        .status()
+        .unwrap();
+        fs::remove_file(format!("{}.pre-install", pkg));
+    } else {
+        println!("No pre-installation required");
+    }
     copy_recursive(Path::new("."), Path::new("/"), &opts).unwrap();
+    println!("running ldconfig.....");
+    Command::new("bash")
+    .args(["-c", "ldconfig"])
+    .status()
+    .unwrap();
+    if Path::new(&format!("{}.post-install", pkg)).exists() {
+        let post_install = format!("./{}.post-install", pkg);
+        Command::new("bash")
+        .args(["-c", &post_install])
+        .status()
+        .unwrap();
+        fs::remove_file(format!("{}.post-install", pkg));
+    } else {
+        println!("No post-installation required");
+    }
     fs::remove_dir_all(format!("/var/lib/pkg/DB/{}", pkg_name)).unwrap();
     fs::create_dir(format!("/var/lib/pkg/DB/{}", pkg_name)).unwrap();
     fs::copy("/META", format!("/var/lib/pkg/DB/{}/META", pkg_name)).unwrap();
