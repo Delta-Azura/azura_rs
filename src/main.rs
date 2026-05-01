@@ -173,6 +173,7 @@ fn install(rawpkg: &str) {
     };
     if Path::new(&format!("{}.pre-install", pkg)).exists() {
         let pre_install = format!("chmod u+x {}.pre-install && ./{}.pre-install", pkg, pkg);
+        println!("Starting pre-installation.");
         Command::new("bash")
         .args(["-c", &pre_install])
         .status()
@@ -189,6 +190,7 @@ fn install(rawpkg: &str) {
     .unwrap();
     if Path::new(&format!("{}.post-install", pkg)).exists() {
         let post_install = format!("chmod u+x {}.post-install && ./{}.post-install", pkg, pkg);
+        println!("Starting post-installation.");
         Command::new("bash")
         .args(["-c", &post_install])
         .status()
