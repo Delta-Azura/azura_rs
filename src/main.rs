@@ -47,42 +47,6 @@ fn main() {
 
 }
 
-fn trash () {
-    let stdout = stdout(); 
-    let message = String::from("Hello world!");
-    let width = message.chars().count();
-    let mut writer = BufWriter::new(stdout.lock());
-    say(&message, width, &mut writer).unwrap();
-    println!("Guess the number!");
-    println!("Please input your guess.");
-    let mut guess = String::new();
-    io::stdin()
-    .read_line(&mut guess)
-    .expect("Failed to read line");
-    println!("You guessed : {guess}");
-    say(&guess, width, &mut writer).unwrap();
-    match env::set_current_dir("/var/cache/azura/pkg") {
-        Ok(_) => println!("Changing folder"),
-        Err(e) => {
-            println!("Directory doesn't exist, first run : {e}");
-            match fs::create_dir("/var/cache/azura/pkg") {
-                Ok(_) => println!("Directory created"),
-                Err(e) => {
-                    println!("You don't have the root privelegies : {e}");
-                    std::process::exit(1);
-                }
-            }
-        }
-    }
-
-    println!("everything is good");
-    let args: Vec<String> = env::args().collect();
-    if args.len() < 2 {
-        println!("No arguments, please run : azura build packagename");
-        std::process::exit(1);
-    }
-}
-
 fn package() {
     match fs::exists("Pkgfile") {
         Ok(_) => println!("Starting to build"),
@@ -110,6 +74,14 @@ fn package() {
     let mut meta = File::create("META").unwrap();
     let metadata = format!("N{}\nV{}\nr{}\nc{}\nD{}\nP{}", name, version, release, current, description, packager);
     write!(meta, "{}", metadata).unwrap();
+    if Path::new("work").exists() {
+        println!("Removing work/");
+        fs::remove_dir_all("work").unwrap();
+    }
+    if Path::new("pkg").exists() {
+        println!("Removing pkg/");
+        fs::remove_dir_all("pkg").unwrap();
+    }
     fs::create_dir("work").unwrap();
     fs::create_dir("pkg").unwrap();
     let building = format!("{}/work", collection);
