@@ -1,4 +1,4 @@
-use ferris_says::say; // from the previous step
+//use ferris_says::say; // from the previous step
 use std::io::{stdout, BufWriter};
 use std::io;
 use std::env;
@@ -25,7 +25,7 @@ fn main() {
     let args: Vec<String> = std::env::args().collect();
     if args[1] == "package" {
         package()
-    }
+    } 
 
     if args[1] == "install" {
         let argument = format!("{}", args[2]);
@@ -130,11 +130,11 @@ fn package() {
 
 
 fn install(rawpkg: &str) {
-    let pkg_name = rawpkg.split_once(".raw").map(|(name, _)| name).unwrap_or(rawpkg);
+    //let pkg_name = rawpkg.split_once(".raw").map(|(name, _)| name).unwrap_or(rawpkg);
     let pkg = rawpkg.split_once('-').map(|(pkg, _)| pkg).unwrap();
-    fs::create_dir(format!("/var/lib/pkg/DB/{}", pkg_name)).unwrap();
-    fs::copy(rawpkg, format!("/var/lib/pkg/DB/{}/{}", pkg_name, rawpkg)).unwrap();
-    env::set_current_dir(format!("/var/lib/pkg/DB/{}", pkg_name)).unwrap();
+    fs::create_dir(format!("/var/lib/pkg/DB/{}", pkg)).unwrap();
+    fs::copy(rawpkg, format!("/var/lib/pkg/DB/{}/{}", pkg, rawpkg)).unwrap();
+    env::set_current_dir(format!("/var/lib/pkg/DB/{}", pkg)).unwrap();
     if rawpkg.ends_with(".tar.gz") || rawpkg.ends_with(".tgz") {
         let file = fs::File::open(rawpkg).unwrap();
         let mut archive = Archive::new(GzDecoder::new(file));
@@ -178,10 +178,10 @@ fn install(rawpkg: &str) {
     } else {
         println!("No post-installation required");
     }
-    fs::remove_dir_all(format!("/var/lib/pkg/DB/{}", pkg_name)).unwrap();
-    fs::create_dir(format!("/var/lib/pkg/DB/{}", pkg_name)).unwrap();
-    fs::copy("/META", format!("/var/lib/pkg/DB/{}/META", pkg_name)).unwrap();
-    fs::copy(format!("/footprint.{}", pkg), format!("/var/lib/pkg/DB/{}/files", pkg_name)).unwrap();
+    fs::remove_dir_all(format!("/var/lib/pkg/DB/{}", pkg)).unwrap();
+    fs::create_dir(format!("/var/lib/pkg/DB/{}", pkg)).unwrap();
+    fs::copy("/META", format!("/var/lib/pkg/DB/{}/META", pkg)).unwrap();
+    fs::copy(format!("/footprint.{}", pkg), format!("/var/lib/pkg/DB/{}/files", pkg)).unwrap();
     fs::remove_file("/META").unwrap();
     fs::remove_file(format!("/footprint.{}", pkg)).unwrap();
 
@@ -217,53 +217,50 @@ fn extract(tarball: &str) {
 
 // not ready yet
 fn info(rawpkg: &String) {
-    let path = format!("/var/lib/pkg/DB/");
-    env::set_current_dir(format!("{}", path)).unwrap();
+    //let path = format!("/var/lib/pkg/DB/");
+    env::set_current_dir(format!("/var/lib/pkg/DB/{}", rawpkg)).unwrap();
     // Add directory listing
-    let entry = fs::read_dir(".")
-        .unwrap()
-        .filter_map(|e| e.ok())
-        .find(|e| e.file_name().to_str().unwrap_or("").starts_with(rawpkg));
-    if let Some(e) = entry {
-        let directory_tmp = e.file_name(); 
-        let directory = directory_tmp.to_str().unwrap();
-        let file = fs::read_to_string(format!("/var/lib/pkg/DB/{}/META", directory)).unwrap();
-        let mut content = file.lines();
-        let name = content.find(|l| l.starts_with('N')).unwrap().split_once('N').map(|(_, name)| name).unwrap().to_string();
-        println!("Name : {}", name);
-        let version = content.find(|l| l.starts_with('V')).unwrap().to_string().split_once('V').map(|(_, version)| version).unwrap().to_string();
-        println!("Version = {}", version);
-        let description = content.find(|l| l.starts_with('D')).unwrap().to_string().split_once('D').map(|(_, description)| description).unwrap().to_string();
-        println!("Description = {}", description);
-        let packager = content.find(|l| l.starts_with('P')).unwrap().to_string().split_once('P').map(|(_, packager)| packager).unwrap().to_string();
-        println!("Packager = {}", packager);
-
-    } else {
-        println!("Incomplete informations");
-    }
-        
+    //let entry = fs::read_dir(".")
+    //    .unwrap()
+    //    .filter_map(|e| e.ok())
+    //    .find(|e| e.file_name().to_str().unwrap_or("").starts_with(rawpkg));
+    //if let Some(e) = entry {
+    //let directory_tmp = e.file_name(); 
+    //    let directory = directory_tmp.to_str().unwrap();
+    let file = fs::read_to_string(format!("/var/lib/pkg/DB/{}/META", rawpkg)).unwrap();
+    let mut content = file.lines();
+    let name = content.find(|l| l.starts_with('N')).unwrap().split_once('N').map(|(_, name)| name).unwrap().to_string();
+    println!("Name : {}", name);
+    let version = content.find(|l| l.starts_with('V')).unwrap().to_string().split_once('V').map(|(_, version)| version).unwrap().to_string();
+    println!("Version = {}", version);
+    let description = content.find(|l| l.starts_with('D')).unwrap().to_string().split_once('D').map(|(_, description)| description).unwrap().to_string();
+    println!("Description = {}", description);
+    let packager = content.find(|l| l.starts_with('P')).unwrap().to_string().split_once('P').map(|(_, packager)| packager).unwrap().to_string();
+    println!("Packager = {}", packager);      
 }
 
 fn remove(rawpkg: &String) {
-    env::set_current_dir("/var/lib/pkg/DB/").unwrap();
-    let entry = fs::read_dir(".")
-        .unwrap()
-        .filter_map(|e| e.ok())
-        .find(|e| e.file_name().to_str().unwrap_or("").starts_with(rawpkg));
-    if let Some(e) = entry {
-        let directory_tmp = e.file_name(); 
-        let directory = directory_tmp.to_str().unwrap();
-        let file = fs::read_to_string(format!("/var/lib/pkg/DB/{}/files", directory)).unwrap();
+    let check = format!("/var/lib/pkg/DB/{}", rawpkg);
+    if Path::new(&check).exists() {
+        env::set_current_dir(format!("/var/lib/pkg/DB/{}", rawpkg)).unwrap();
+        let file = fs::read_to_string(format!("/var/lib/pkg/DB/{}/files", rawpkg)).unwrap();
         let content = file.lines();
-        fs::remove_dir_all(format!("/var/lib/pkg/DB/{}", directory));
+        fs::remove_dir_all(format!("/var/lib/pkg/DB/{}", rawpkg));
         for i in content {
-            let _ = fs::remove_file(i);
-            let _ = fs::remove_dir(i);
-        }
+            let _ = fs::remove_file(format!("/{}", i));
+            let _ = fs::remove_dir(format!("/{}", i));
+            println!("Package has been correctly uninstalled !");
+        } 
     } else {
-        println!("This package isn't installed, can't remove it")
+            println!("This package isn't installed, can't remove it");
     }
-    println!("Package has been correctly uninstalled !");
+    //let entry = fs::read_dir(".")
+    //    .unwrap()
+    //    .filter_map(|e| e.ok())
+    //    .find(|e| e.file_name().to_str().unwrap_or("").starts_with(rawpkg));
+    //if let Some(e) = entry {
+    //    let directory_tmp = e.file_name(); 
+    //    let directory = directory_tmp.to_str().unwrap();
 }
 
 fn query(path: &String) {
