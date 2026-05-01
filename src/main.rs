@@ -254,6 +254,7 @@ fn remove(rawpkg: &String) {
     } else {
             println!("This package isn't installed, can't remove it");
     }
+    //scanning the entire directory to find the right path
     //let entry = fs::read_dir(".")
     //    .unwrap()
     //    .filter_map(|e| e.ok())
