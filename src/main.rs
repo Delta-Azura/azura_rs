@@ -84,6 +84,9 @@ fn package() {
     }
     fs::create_dir("work").unwrap();
     fs::create_dir("pkg").unwrap();
+    if Path::new("config").exists() {
+        fs::copy("config", "work/config").unwrap();
+    }
     let building = format!("{}/work", collection);
     env::set_current_dir(&building).unwrap();
     println!("Switching to the work directory {}", building);
@@ -98,7 +101,7 @@ fn package() {
     let prepare = format!("{}/pkg", collection);
     
     //env::set_current_dir(&prepare).unwrap();
-    let mut footprint = File::create(format!("footprint.{}", name)).unwrap();
+    let mut footprint = File::create(format!("{}.footprint", name)).unwrap();
     for entry in WalkDir::new(&prepare).follow_links(true) {
         let foot = entry.unwrap().path().display().to_string();
         let pathpkg = foot.split_once(&prepare).map(|(_,pathpkg)| pathpkg).unwrap().to_string();
@@ -109,7 +112,7 @@ fn package() {
         writeln!(footprint, "{}", list).unwrap();
     }
     fs::copy("META", "pkg/META").unwrap();
-    fs::copy(format!("footprint.{}", name), format!("pkg/footprint.{}", name)).unwrap();
+    fs::copy(format!("{}.footprint", name), format!("pkg/{}.footprint", name)).unwrap();
     if Path::new(&format!("{}/{}.pre-install", collection, name)).exists() {
         fs::copy(format!("{}.pre-install", name), format!("pkg/{}.pre-install", name)).unwrap();
     } else {
@@ -121,7 +124,7 @@ fn package() {
         println!("No need to prepare post-installation");
     }
     //let packagename = format!("{}", name);
-    let tar = File::create(format!("{}-{}.raw.tar.gz", name, version)).unwrap();
+    let tar = File::create(format!("{}.{}.raw.tar.gz", name, version)).unwrap();
     let enc = GzEncoder::new(tar, Compression::default());
     let mut a = tar::Builder::new(enc);
     a.append_dir_all("", "pkg/").unwrap();
@@ -131,7 +134,7 @@ fn package() {
 
 fn install(rawpkg: &str) {
     //let pkg_name = rawpkg.split_once(".raw").map(|(name, _)| name).unwrap_or(rawpkg);
-    let pkg = rawpkg.split_once('-').map(|(pkg, _)| pkg).unwrap();
+    let pkg = rawpkg.split_once('.').map(|(pkg, _)| pkg).unwrap();
     fs::create_dir(format!("/var/lib/pkg/DB/{}", pkg)).unwrap();
     fs::copy(rawpkg, format!("/var/lib/pkg/DB/{}/{}", pkg, rawpkg)).unwrap();
     env::set_current_dir(format!("/var/lib/pkg/DB/{}", pkg)).unwrap();
@@ -181,9 +184,10 @@ fn install(rawpkg: &str) {
     fs::remove_dir_all(format!("/var/lib/pkg/DB/{}", pkg)).unwrap();
     fs::create_dir(format!("/var/lib/pkg/DB/{}", pkg)).unwrap();
     fs::copy("/META", format!("/var/lib/pkg/DB/{}/META", pkg)).unwrap();
-    fs::copy(format!("/footprint.{}", pkg), format!("/var/lib/pkg/DB/{}/files", pkg)).unwrap();
+    fs::copy(format!("/{}.footprint", pkg), format!("/var/lib/pkg/DB/{}/files", pkg)).unwrap();
     fs::remove_file("/META").unwrap();
-    fs::remove_file(format!("/footprint.{}", pkg)).unwrap();
+    fs::remove_file(format!("/{}.footprint", pkg)).unwrap();
+    fs::remove_file(format!("/{}", rawpkg)).unwrap();
 
 }
 
@@ -228,6 +232,7 @@ fn info(rawpkg: &String) {
     //let directory_tmp = e.file_name(); 
     //    let directory = directory_tmp.to_str().unwrap();
     let file = fs::read_to_string(format!("/var/lib/pkg/DB/{}/META", rawpkg)).unwrap();
+    // Adding vect to be able to read properly, without this it would be unable to read if the order isn't respected
     let mut content: Vec<String> = file.lines().map(|l| l.to_string()).collect();
     let name = content.iter().find(|l| l.starts_with('N')).unwrap().split_once('N').map(|(_, name)| name).unwrap().to_string();
     println!("Name : {}", name);
