@@ -296,12 +296,11 @@ fn query(path: &String) {
     for e in fs::read_dir(".").unwrap().filter_map(|e| e.ok()) {
         let directory_tmp = e.file_name(); 
         let directory = directory_tmp.to_str().unwrap();
-        for i in directory.chars() {
-            let compare = fs::read_to_string(format!("/var/lib/pkg/DB/{}/files", i)).unwrap();
-            if compare == *path {
-                println!("This file/repertory belongs to : {}", i);
+        let compare = fs::read_to_string(format!("/var/lib/pkg/DB/{}/files", directory)).unwrap();
+        for line in compare.lines() {
+            if line == path {
+            println!("This file/repertory belongs to : {}", directory);
             }
         }
-
     }
 }
