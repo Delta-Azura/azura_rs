@@ -87,8 +87,9 @@ fn package() {
     let tarball = download(&source);
     extract(&tarball);
     //let extracted = Path::new("{}/{}", collection, tarball)
+    //env::set_current_dir(&collection).unwrap();
     Command::new("bash")
-    .args(["-c", "source Pkgfile && fakeroot build"])
+    .args(["-c", "source Pkgfile && cd work fakeroot build"])
     .status()
     .unwrap();
 }
@@ -110,11 +111,6 @@ fn extract(tarball: &str) {
         tarball.to_string()
     };
     let source = File::open(tarball).unwrap();
-    fs::create_dir(&directory).unwrap();
-    let current = std::env::current_dir().unwrap();
-    let current = current.display().to_string();
-    let unpacked = format!("{}/{}", current, directory);
-    assert!(env::set_current_dir(&unpacked).is_ok());
     if tarball.ends_with(".tar.gz") || tarball.ends_with(".tgz") {
         let mut archive = Archive::new(GzDecoder::new(source));
         archive.unpack(".").unwrap();
