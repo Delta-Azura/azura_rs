@@ -106,6 +106,8 @@ fn package() {
         //let mut footprint = format!("{}", foot);
         writeln!(footprint, "{}", foot).unwrap();
     }
+    fs::copy("META", "pkg/META").unwrap();
+    fs::copy("footprint", "pkg/footprint").unwrap();
     //let packagename = format!("{}", name);
     let tar = File::create(format!("{}.tar.gz", name)).unwrap();
     let enc = GzEncoder::new(tar, Compression::default());
