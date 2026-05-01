@@ -188,3 +188,10 @@ fn extract(tarball: &str) {
         archive.unpack(".").unwrap();
     }
 }
+
+
+// not ready yet
+//fn info(package: &string) {
+//    let path = format!("/var/lib/pkg/DB/")
+//    let file = fs::File::open(package).unwrap();
+//}
