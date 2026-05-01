@@ -172,7 +172,7 @@ fn install(rawpkg: &str) {
         ..Default::default()
     };
     if Path::new(&format!("{}.pre-install", pkg)).exists() {
-        let pre_install = format!("./{}.pre-install", pkg);
+        let pre_install = format!("chmod u+x {}.pre-install && ./{}.pre-install", pkg, pkg);
         Command::new("bash")
         .args(["-c", &pre_install])
         .status()
@@ -188,7 +188,7 @@ fn install(rawpkg: &str) {
     .status()
     .unwrap();
     if Path::new(&format!("{}.post-install", pkg)).exists() {
-        let post_install = format!("./{}.post-install", pkg);
+        let post_install = format!("chmod u+x {}.post-install && ./{}.post-install", pkg, pkg);
         Command::new("bash")
         .args(["-c", &post_install])
         .status()
@@ -273,7 +273,8 @@ fn remove(rawpkg: &String) {
         let directory_tmp = e.file_name(); 
         let directory = directory_tmp.to_str().unwrap();
         let file = fs::read_to_string(format!("/var/lib/pkg/DB/{}/files", directory)).unwrap();
-        let content = file.lines(); 
+        let content = file.lines();
+        fs::remove_dir_all(format!("/var/lib/pkg/DB/{}", directory));
         for i in content {
             let _ = fs::remove_file(i);
             let _ = fs::remove_dir(i);
@@ -281,6 +282,5 @@ fn remove(rawpkg: &String) {
     } else {
         println!("This package isn't installed, can't remove it")
     }
-    fs::remove_dir_all(format!("/var/lib/pkg/DB/{}", rawpkg));
     println!("Package has been correctly uninstalled !");
 }
