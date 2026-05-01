@@ -27,7 +27,7 @@ fn main() {
         package()
     } else {
         if args[1] == "install" {
-            let argument = format!("{}", args[1]);
+            let argument = format!("{}", args[2]);
             install(&argument)
         } else {
             println!("Please specify an option")
