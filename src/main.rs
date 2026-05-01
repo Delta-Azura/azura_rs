@@ -11,6 +11,7 @@ use tar::Archive;
 use bzip2::read::BzDecoder;
 use xz2::read::XzDecoder;
 use walkdir::WalkDir;
+ use std::fs::write;
 
 
 fn main() {
@@ -96,8 +97,11 @@ fn package() {
     let prepare = format!("{}/pkg", collection);
     
     //env::set_current_dir(&prepare).unwrap();
+    let mut footprint = File::create("footprint").unwrap();
     for entry in WalkDir::new(&prepare).follow_links(true) {
-        println!("{}", entry.unwrap().path().display());
+        let foot = entry.unwrap().path().display().to_string();
+        //let mut footprint = format!("{}", foot);
+        writeln!(footprint, "{}", foot).unwrap();
     }
 
 }
