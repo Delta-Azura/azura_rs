@@ -10,6 +10,7 @@ use flate2::read::GzDecoder;
 use tar::Archive;
 use bzip2::read::BzDecoder;
 use xz2::read::XzDecoder;
+use walkdir::WalkDir;
 
 
 fn main() {
@@ -89,9 +90,16 @@ fn package() {
     //let extracted = Path::new("{}/{}", collection, tarball)
     env::set_current_dir(&collection).unwrap();
     Command::new("bash")
-    .args(["-c", "source Pkgfile && cd work && fakeroot build"])
+    .args(["-c", "fakeroot bash -c 'source Pkgfile && cd work && build'"])
     .status()
     .unwrap();
+    let prepare = format!("{}/pkg", collection);
+    
+    //env::set_current_dir(&prepare).unwrap();
+    for entry in WalkDir::new(&prepare).follow_links(true) {
+        println!("{}", entry.unwrap().path().display());
+    }
+
 }
 
 
