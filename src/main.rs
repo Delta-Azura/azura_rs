@@ -11,8 +11,11 @@ use tar::Archive;
 use bzip2::read::BzDecoder;
 use xz2::read::XzDecoder;
 use walkdir::WalkDir;
- use std::fs::write;
-
+use std::fs::write;
+use tar::Builder;
+use xz2::write::XzEncoder;
+use flate2::Compression;
+use flate2::write::GzEncoder;
 
 fn main() {
     package();
@@ -103,6 +106,12 @@ fn package() {
         //let mut footprint = format!("{}", foot);
         writeln!(footprint, "{}", foot).unwrap();
     }
+    //let packagename = format!("{}", name);
+    let tar = File::create(format!("{}.tar.gz", name)).unwrap();
+    let enc = GzEncoder::new(tar, Compression::default());
+    let mut a = tar::Builder::new(enc);
+    a.append_dir_all("", "pkg/").unwrap();
+    a.finish().unwrap();
 
 }
 
