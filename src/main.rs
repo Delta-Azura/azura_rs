@@ -135,7 +135,7 @@ fn package() {
 fn install(package: &str) {
     let pkg_name = package.split_once('.').map(|(name, _)| name).unwrap_or(package);
     fs::create_dir(format!("/var/lib/pkg/DB/{}", pkg_name)).unwrap();
-    fs::copy(package, format!("var/lib/pkg/DB/{}", pkg_name)).unwrap();
+    fs::copy(package, format!("var/lib/pkg/DB/{}/{}", pkg_name, package)).unwrap();
     env::set_current_dir(format!("/var/lib/pkg/DB/{}", pkg_name)).unwrap();
     if package.ends_with(".tar.gz") || package.ends_with(".tgz") {
         let file = fs::File::open(package).unwrap();
@@ -153,8 +153,8 @@ fn install(package: &str) {
         ..Default::default()
     };
     copy_recursive(Path::new(""), Path::new("/"), &opts).unwrap();
-    fs::copy("/META", format!("/var/lib/pkg/DB/{}", pkg_name)).unwrap();
-    fs::copy("/footprint", format!("/var/lib/pkg/DB{}", pkg_name)).unwrap();
+    fs::copy("/META", format!("/var/lib/pkg/DB/{}/META", pkg_name)).unwrap();
+    fs::copy("/footprint", format!("/var/lib/pkg/DB{}/footprint", pkg_name)).unwrap();
     fs::remove_file("/META").unwrap();
     fs::remove_file("/footprint").unwrap();
 
