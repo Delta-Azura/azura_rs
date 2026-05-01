@@ -96,6 +96,9 @@ fn package() {
     env::set_current_dir(&collection).unwrap();
     Command::new("bash")
     .args(["-c", "fakeroot bash -c 'source Pkgfile && PKG=$(pwd)/pkg && cd work && build'"])
+    .env("MAKEFLAGS", format!("-j{}", std::thread::available_parallelism().map(|n| n.get()).unwrap_or(1)))
+    .env("CFLAGS", "-O2 -pipe")
+    .env("CXXFLAGS", "-O2 -pipe")
     .status()
     .unwrap();
     let prepare = format!("{}/pkg", collection);
@@ -283,4 +286,10 @@ fn query(path: &String) {
             }
         }
     }
+}
+
+fn num_cpus() -> usize {
+    std::thread::available_parallelism()
+        .map(|n| n.get())
+        .unwrap_or(1)
 }
