@@ -1,5 +1,5 @@
-# What is azura_rs
-Azura_rs is a project of a package manager from scratch for Onyx.
+# What is RAW
+Raw is a project of a package manager from scratch for Onyx.
 
 # ROADMAP
 The main goal is to build a package manager able to do everything I need to continue to use my Pkgfiles as written for pkgmk from pkgutils. 
