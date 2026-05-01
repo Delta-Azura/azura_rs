@@ -152,7 +152,7 @@ fn install(package: &str) {
         content_only: false,
         ..Default::default()
     };
-    copy_recursive(Path::new(""), Path::new("/"), &opts).unwrap();
+    copy_recursive(Path::new("."), Path::new("/"), &opts).unwrap();
     fs::copy("/META", format!("/var/lib/pkg/DB/{}/META", pkg_name)).unwrap();
     fs::copy("/footprint", format!("/var/lib/pkg/DB{}/footprint", pkg_name)).unwrap();
     fs::remove_file("/META").unwrap();
