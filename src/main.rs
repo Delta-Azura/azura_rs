@@ -8,8 +8,15 @@ use std::fs::File;
 use std::io::Write;
 use flate2::read::GzDecoder;
 use tar::Archive;
+use bzip2::read::BzDecoder;
+use xz2::read::XzDecoder;
+
 
 fn main() {
+    package();
+}
+
+fn trash () {
     let stdout = stdout(); 
     let message = String::from("Hello world!");
     let width = message.chars().count();
@@ -43,10 +50,7 @@ fn main() {
         println!("No arguments, please run : azura build packagename");
         std::process::exit(1);
     }
-
 }
-
-
 
 fn package() {
     match fs::exists("Pkgfile") {
@@ -100,18 +104,29 @@ fn download(url: &str) -> String {
 }
 
 fn extract(tarball: &str) {
-    let source = File::open(tarball).unwrap();
-    let gz = GzDecoder::new(source);
-    let mut archive = Archive::new(gz);
     let directory = if let Some(pos) = tarball.find(".tar.") {
         tarball[..pos].to_string()
     } else {
         tarball.to_string()
     };
+    let source = File::open(tarball).unwrap();
     fs::create_dir(&directory).unwrap();
     let current = std::env::current_dir().unwrap();
     let current = current.display().to_string();
     let unpacked = format!("{}/{}", current, directory);
     assert!(env::set_current_dir(&unpacked).is_ok());
-    archive.unpack(".").unwrap();
+    if tarball.ends_with(".tar.gz") || tarball.ends_with(".tgz") {
+        let mut archive = Archive::new(GzDecoder::new(source));
+        archive.unpack(".").unwrap();
+    } else if tarball.ends_with(".tar.xz") {
+        let mut archive = Archive::new(XzDecoder::new(source));
+        archive.unpack(".").unwrap();
+    } else if tarball.ends_with(".tar.bz2") {
+        let mut archive = Archive::new(BzDecoder::new(source));
+        archive.unpack(".").unwrap();
+    } else if tarball.ends_with(".tar.zst") {
+        let mut decoder = zstd::stream::read::Decoder::new(source).unwrap();
+        let mut archive = Archive::new(decoder);
+        archive.unpack(".").unwrap();
+    }
 }
