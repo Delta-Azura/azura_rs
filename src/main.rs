@@ -16,6 +16,10 @@ use tar::Builder;
 use xz2::write::XzEncoder;
 use flate2::Compression;
 use flate2::write::GzEncoder;
+//use walkdir_minimal_copy::{copy_recursive, CopyOptions};
+use std::path::Path;
+use recursive_copy::{copy_recursive, CopyOptions};
+//use walkdir_minimal_copy::{copy_recursive, CopyOptions};
 
 fn main() {
     package();
@@ -109,14 +113,40 @@ fn package() {
     fs::copy("META", "pkg/META").unwrap();
     fs::copy("footprint", "pkg/footprint").unwrap();
     //let packagename = format!("{}", name);
-    let tar = File::create(format!("{}.tar.gz", name)).unwrap();
+    let tar = File::create(format!("{}-{}.raw.tar.gz", name, version)).unwrap();
     let enc = GzEncoder::new(tar, Compression::default());
     let mut a = tar::Builder::new(enc);
     a.append_dir_all("", "pkg/").unwrap();
     a.finish().unwrap();
-
 }
 
+
+fn install(package: &str) {
+    let pkg_name = package.split_once('.').map(|(name, _)| name).unwrap_or(package);
+    fs::create_dir(format!("/var/lib/pkg/DB/{}", pkg_name)).unwrap();
+    env::set_current_dir(format!("/var/lib/pkg/DB/{}", pkg_name)).unwrap();
+    if package.ends_with(".tar.gz") || package.ends_with(".tgz") {
+        let file = fs::File::open(package).unwrap();
+        let mut archive = Archive::new(GzDecoder::new(file));
+        archive.unpack(".").unwrap();
+    } else {
+        println!("No package in the format required : ABORTING");
+        std::process::exit(1);
+    }
+    let opts = CopyOptions {
+        overwrite: true,
+        follow_symlinks: true,
+        restrict_symlinks: true,
+        content_only: false,
+        ..Default::default()
+    };
+    copy_recursive(Path::new(""), Path::new("/"), &opts).unwrap();
+    fs::copy("/META", format!("/var/lib/pkg/DB/{}", pkg_name)).unwrap();
+    fs::copy("/footprint", format!("/var/lib/pkg/DB{}", pkg_name)).unwrap();
+    fs::remove_file("/META").unwrap();
+    fs::remove_file("/footprint").unwrap();
+
+}
 
 fn download(url: &str) -> String {
     let answer = reqwest::blocking::get(url).unwrap();

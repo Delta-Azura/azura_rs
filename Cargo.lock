@@ -927,11 +927,21 @@ dependencies = [
  "bzip2",
  "ferris-says",
  "flate2",
+ "recursive_copy",
  "reqwest",
  "tar",
  "walkdir",
  "xz2",
  "zstd",
+]
+
+[[package]]
+name = "recursive_copy"
+version = "1.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a132eaf5d9722123b877b90f6e0c7be14a4b9b00676a00c429629fb2470fdb8e"
+dependencies = [
+ "walkdir_minimal",
 ]
 
 [[package]]
@@ -1563,6 +1573,12 @@ dependencies = [
  "same-file",
  "winapi-util",
 ]
+
+[[package]]
+name = "walkdir_minimal"
+version = "1.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "40e77d986d1de8c1028b546f8709fd7bf44a3418aed2a78516c8dfa7d9e095cd"
 
 [[package]]
 name = "want"
