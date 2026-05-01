@@ -22,7 +22,18 @@ use recursive_copy::{copy_recursive, CopyOptions};
 //use walkdir_minimal_copy::{copy_recursive, CopyOptions};
 
 fn main() {
-    package();
+    let args: Vec<String> = std::env::args().collect();
+    if args[1] == "package" {
+        package()
+    } else {
+        if args[1] == "install" {
+            let argument = format!("{}", args[1]);
+            install(&argument)
+        } else {
+            println!("Please specify an option")
+        }
+    }
+
 }
 
 fn trash () {
