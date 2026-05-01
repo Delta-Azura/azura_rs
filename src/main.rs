@@ -256,6 +256,6 @@ fn remove(rawpkg: &String) {
     } else {
         println!("This package isn't installed, can't remove it")
     }
-
-
+    fs::remove_dir_all(format!("/var/lib/pkg/DB/{}", rawpkg));
+    println!("Package has been correctly uninstalled !");
 }
