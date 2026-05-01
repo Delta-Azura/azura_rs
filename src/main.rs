@@ -25,18 +25,20 @@ fn main() {
     let args: Vec<String> = std::env::args().collect();
     if args[1] == "package" {
         package()
-    } else {
-        if args[1] == "install" {
-            let argument = format!("{}", args[2]);
-            install(&argument)
-        } else {
-            if args[1] == "info" {
-                let argument = format!("{}", args[2]);
-                info(&argument)
-            } else {
-                println!("Please specify an option");
-            }
-        }
+    }
+
+    if args[1] == "install" {
+        let argument = format!("{}", args[2]);
+        install(&argument)
+    }
+
+    if args[1] == "info" {
+        let argument = format!("{}", args[2]);
+        info(&argument)
+    }
+    if args[1] == "remove" {
+        let argument = format!("{}", args[2]);
+        remove(&argument)
     }
 
 }
@@ -128,7 +130,17 @@ fn package() {
         writeln!(footprint, "{}", pathpkg).unwrap();
     }
     fs::copy("META", "pkg/META").unwrap();
-    fs::copy("footprint", "pkg/footprint").unwrap();
+    fs::copy(format!("footprint.{}", name), format!("pkg/footprint.{}", name)).unwrap();
+    if Path::new(&format!("{}/{}.pre-install", collection, name)).exists() {
+        fs::copy(format!("{}.pre-install", name), format!("pkg/{}.pre-install", name)).unwrap();
+    } else {
+        println!("No need to prepare pre-installation");
+    }
+    if Path::new(&format!("{}/{}.post-install", collection, name)).exists() {
+        fs::copy(format!("{}.post-install", name), format!("pkg/{}.post-install", name)).unwrap();
+    } else {
+        println!("No need to prepare post-installation");
+    }
     //let packagename = format!("{}", name);
     let tar = File::create(format!("{}-{}.raw.tar.gz", name, version)).unwrap();
     let enc = GzEncoder::new(tar, Compression::default());
@@ -138,13 +150,14 @@ fn package() {
 }
 
 
-fn install(package: &str) {
-    let pkg_name = package.split_once(".raw").map(|(name, _)| name).unwrap_or(package);
+fn install(rawpkg: &str) {
+    let pkg_name = rawpkg.split_once(".raw").map(|(name, _)| name).unwrap_or(rawpkg);
+    let pkg = rawpkg.split_once('-').map(|(pkg, _)| pkg).unwrap();
     fs::create_dir(format!("/var/lib/pkg/DB/{}", pkg_name)).unwrap();
-    fs::copy(package, format!("/var/lib/pkg/DB/{}/{}", pkg_name, package)).unwrap();
+    fs::copy(rawpkg, format!("/var/lib/pkg/DB/{}/{}", pkg_name, rawpkg)).unwrap();
     env::set_current_dir(format!("/var/lib/pkg/DB/{}", pkg_name)).unwrap();
-    if package.ends_with(".tar.gz") || package.ends_with(".tgz") {
-        let file = fs::File::open(package).unwrap();
+    if rawpkg.ends_with(".tar.gz") || rawpkg.ends_with(".tgz") {
+        let file = fs::File::open(rawpkg).unwrap();
         let mut archive = Archive::new(GzDecoder::new(file));
         archive.unpack(".").unwrap();
     } else {
@@ -162,9 +175,9 @@ fn install(package: &str) {
     fs::remove_dir_all(format!("/var/lib/pkg/DB/{}", pkg_name)).unwrap();
     fs::create_dir(format!("/var/lib/pkg/DB/{}", pkg_name)).unwrap();
     fs::copy("/META", format!("/var/lib/pkg/DB/{}/META", pkg_name)).unwrap();
-    fs::copy("/footprint", format!("/var/lib/pkg/DB/{}/files", pkg_name)).unwrap();
+    fs::copy(format!("/footprint.{}", pkg), format!("/var/lib/pkg/DB/{}/files", pkg_name)).unwrap();
     fs::remove_file("/META").unwrap();
-    fs::remove_file("/footprint").unwrap();
+    fs::remove_file(format!("/footprint.{}", pkg)).unwrap();
 
 }
 
@@ -197,14 +210,14 @@ fn extract(tarball: &str) {
 
 
 // not ready yet
-fn info(package: &String) {
+fn info(rawpkg: &String) {
     let path = format!("/var/lib/pkg/DB/");
     env::set_current_dir(format!("{}", path)).unwrap();
     // Add directory listing
     let entry = fs::read_dir(".")
         .unwrap()
         .filter_map(|e| e.ok())
-        .find(|e| e.file_name().to_str().unwrap_or("").starts_with(package));
+        .find(|e| e.file_name().to_str().unwrap_or("").starts_with(rawpkg));
     if let Some(e) = entry {
         let directory_tmp = e.file_name(); 
         let directory = directory_tmp.to_str().unwrap();
@@ -225,3 +238,24 @@ fn info(package: &String) {
         
 }
 
+fn remove(rawpkg: &String) {
+    env::set_current_dir("/var/lib/pkg/DB/").unwrap();
+    let entry = fs::read_dir(".")
+        .unwrap()
+        .filter_map(|e| e.ok())
+        .find(|e| e.file_name().to_str().unwrap_or("").starts_with(rawpkg));
+    if let Some(e) = entry {
+        let directory_tmp = e.file_name(); 
+        let directory = directory_tmp.to_str().unwrap();
+        let file = fs::read_to_string(format!("/var/lib/pkg/DB/{}/files", directory)).unwrap();
+        let content = file.lines(); 
+        for i in content {
+            let _ = fs::remove_file(i);
+            let _ = fs::remove_dir(i);
+        }
+    } else {
+        println!("This package isn't installed, can't remove it")
+    }
+
+
+}
