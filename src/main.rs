@@ -91,7 +91,7 @@ fn package() {
     //let extracted = Path::new("{}/{}", collection, tarball)
     env::set_current_dir(&collection).unwrap();
     Command::new("bash")
-    .args(["-c", "fakeroot bash -c 'source Pkgfile && cd work && build'"])
+    .args(["-c", "fakeroot bash -c 'source Pkgfile && PKG=$(pwd)/pkg && cd work && build'"])
     .status()
     .unwrap();
     let prepare = format!("{}/pkg", collection);
