@@ -286,3 +286,18 @@ fn remove(rawpkg: &String) {
     }
     println!("Package has been correctly uninstalled !");
 }
+
+fn query(path: &String) {
+    env::set_current_dir("/var/lib/pkg/DB/").unwrap();
+    for e in fs::read_dir(".").unwrap().filter_map(|e| e.ok()) {
+        let directory_tmp = e.file_name(); 
+        let directory = directory_tmp.to_str().unwrap();
+        for i in directory.chars() {
+            let compare = fs::read_to_string(format!("/var/lib/pkg/DB/{}/files", i)).unwrap();
+            if compare == *path {
+                println!("This file/repertory belongs to : {}", i);
+            }
+        }
+
+    }
+}
