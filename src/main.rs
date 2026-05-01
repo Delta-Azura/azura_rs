@@ -30,7 +30,12 @@ fn main() {
             let argument = format!("{}", args[2]);
             install(&argument)
         } else {
-            println!("Please specify an option")
+            if args[1] == "info" {
+                let argument = format!("{}", args[2]);
+                info(&argument)
+            } else {
+                println!("Please specify an option");
+            }
         }
     }
 
@@ -191,7 +196,31 @@ fn extract(tarball: &str) {
 
 
 // not ready yet
-//fn info(package: &string) {
-//    let path = format!("/var/lib/pkg/DB/")
-//    let file = fs::File::open(package).unwrap();
-//}
+fn info(package: &String) {
+    let path = format!("/var/lib/pkg/DB/");
+    env::set_current_dir(format!("{}", path)).unwrap();
+    // Add directory listing
+    let entry = fs::read_dir(".")
+        .unwrap()
+        .filter_map(|e| e.ok())
+        .find(|e| e.file_name().to_str().unwrap_or("").starts_with(package));
+    if let Some(e) = entry {
+        let directory_tmp = e.file_name(); 
+        let directory = directory_tmp.to_str().unwrap();
+        let file = fs::read_to_string(format!("/var/lib/pkg/DB/{}/META", directory)).unwrap();
+        let mut content = file.lines();
+        let name = content.find(|l| l.starts_with('N')).unwrap().to_string();
+        println!("Name : {}", name);
+        let version = content.find(|l| l.starts_with('V')).unwrap().to_string();
+        println!("Version = {}", version);
+        let description = content.find(|l| l.starts_with('D')).unwrap().to_string();
+        println!("Description = {}", description);
+        let packager = content.find(|l| l.starts_with('P')).unwrap().to_string();
+        println!("Packager = {}", packager);
+
+    } else {
+        println!("Incomplete informations");
+    }
+        
+
+}
