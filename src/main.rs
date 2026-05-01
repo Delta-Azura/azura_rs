@@ -89,7 +89,7 @@ fn package() {
     //let extracted = Path::new("{}/{}", collection, tarball)
     env::set_current_dir(&collection).unwrap();
     Command::new("bash")
-    .args(["-c", "source Pkgfile && cd work fakeroot build"])
+    .args(["-c", "source Pkgfile && cd work && fakeroot build"])
     .status()
     .unwrap();
 }
