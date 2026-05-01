@@ -40,6 +40,10 @@ fn main() {
         let argument = format!("{}", args[2]);
         remove(&argument)
     }
+    if args[1] == "query" {
+        let argument = format!("{}", args[2]);
+        query(&argument)
+    }
 
 }
 
