@@ -123,6 +123,7 @@ fn package() {
     let mut footprint = File::create("footprint").unwrap();
     for entry in WalkDir::new(&prepare).follow_links(true) {
         let foot = entry.unwrap().path().display().to_string();
+        let pathpkg = foot.split_once(&prepare).map(|(_,pathpkg)| pathpkg).unwrap().to_string();
         //let mut footprint = format!("{}", foot);
         writeln!(footprint, "{}", foot).unwrap();
     }
@@ -222,5 +223,5 @@ fn info(package: &String) {
         println!("Incomplete informations");
     }
         
-
 }
+
