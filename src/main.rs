@@ -130,8 +130,11 @@ fn package() {
     for entry in WalkDir::new(&prepare).follow_links(true) {
         let foot = entry.unwrap().path().display().to_string();
         let pathpkg = foot.split_once(&prepare).map(|(_,pathpkg)| pathpkg).unwrap().to_string();
+        if pathpkg.is_empty() { continue; }
+        let list = pathpkg.split_once('/').map(|(_,list)| list).unwrap().to_string();
+        //if list.is_empty() { continue; }
         //let mut footprint = format!("{}", foot);
-        writeln!(footprint, "{}", pathpkg).unwrap();
+        writeln!(footprint, "{}", list).unwrap();
     }
     fs::copy("META", "pkg/META").unwrap();
     fs::copy(format!("footprint.{}", name), format!("pkg/footprint.{}", name)).unwrap();
@@ -293,12 +296,14 @@ fn remove(rawpkg: &String) {
 
 fn query(path: &String) {
     env::set_current_dir("/var/lib/pkg/DB/").unwrap();
+    let target = format!("{}", path).split_once('/').map(|(_, target)| target).unwrap().to_string(); 
+    //.map(|(_, name)| name).unwrap().to_string();
     for e in fs::read_dir(".").unwrap().filter_map(|e| e.ok()) {
         let directory_tmp = e.file_name(); 
         let directory = directory_tmp.to_str().unwrap();
         let compare = fs::read_to_string(format!("/var/lib/pkg/DB/{}/files", directory)).unwrap();
         for line in compare.lines() {
-            if line == path {
+            if line == target {
             println!("This file/repertory belongs to : {}", directory);
             }
         }
