@@ -120,7 +120,7 @@ fn package() {
     let prepare = format!("{}/pkg", collection);
     
     //env::set_current_dir(&prepare).unwrap();
-    let mut footprint = File::create("footprint").unwrap();
+    let mut footprint = File::create(format!("footprint.{}", name)).unwrap();
     for entry in WalkDir::new(&prepare).follow_links(true) {
         let foot = entry.unwrap().path().display().to_string();
         let pathpkg = foot.split_once(&prepare).map(|(_,pathpkg)| pathpkg).unwrap().to_string();
@@ -139,7 +139,7 @@ fn package() {
 
 
 fn install(package: &str) {
-    let pkg_name = package.split_once('.').map(|(name, _)| name).unwrap_or(package);
+    let pkg_name = package.split_once(".raw").map(|(name, _)| name).unwrap_or(package);
     fs::create_dir(format!("/var/lib/pkg/DB/{}", pkg_name)).unwrap();
     fs::copy(package, format!("/var/lib/pkg/DB/{}/{}", pkg_name, package)).unwrap();
     env::set_current_dir(format!("/var/lib/pkg/DB/{}", pkg_name)).unwrap();
