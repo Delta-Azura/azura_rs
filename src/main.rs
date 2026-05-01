@@ -87,7 +87,7 @@ fn package() {
     let tarball = download(&source);
     extract(&tarball);
     //let extracted = Path::new("{}/{}", collection, tarball)
-    //env::set_current_dir(&collection).unwrap();
+    env::set_current_dir(&collection).unwrap();
     Command::new("bash")
     .args(["-c", "source Pkgfile && cd work fakeroot build"])
     .status()
@@ -105,11 +105,6 @@ fn download(url: &str) -> String {
 }
 
 fn extract(tarball: &str) {
-    let directory = if let Some(pos) = tarball.find(".tar.") {
-        tarball[..pos].to_string()
-    } else {
-        tarball.to_string()
-    };
     let source = File::open(tarball).unwrap();
     if tarball.ends_with(".tar.gz") || tarball.ends_with(".tgz") {
         let mut archive = Archive::new(GzDecoder::new(source));
@@ -121,7 +116,7 @@ fn extract(tarball: &str) {
         let mut archive = Archive::new(BzDecoder::new(source));
         archive.unpack(".").unwrap();
     } else if tarball.ends_with(".tar.zst") {
-        let mut decoder = zstd::stream::read::Decoder::new(source).unwrap();
+        let decoder = zstd::stream::read::Decoder::new(source).unwrap();
         let mut archive = Archive::new(decoder);
         archive.unpack(".").unwrap();
     }
