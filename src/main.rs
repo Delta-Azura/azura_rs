@@ -125,7 +125,7 @@ fn package() {
         let foot = entry.unwrap().path().display().to_string();
         let pathpkg = foot.split_once(&prepare).map(|(_,pathpkg)| pathpkg).unwrap().to_string();
         //let mut footprint = format!("{}", foot);
-        writeln!(footprint, "{}", foot).unwrap();
+        writeln!(footprint, "{}", pathpkg).unwrap();
     }
     fs::copy("META", "pkg/META").unwrap();
     fs::copy("footprint", "pkg/footprint").unwrap();
