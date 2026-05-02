@@ -146,6 +146,7 @@ fn package() {
     let tar = File::create(format!("{}.{}.raw.tar.gz", name, version)).unwrap();
     let enc = GzEncoder::new(tar, Compression::default());
     let mut a = tar::Builder::new(enc);
+    a.follow_symlinks(false);
     a.append_dir_all("", "pkg/").unwrap();
     a.finish().unwrap();
 }
