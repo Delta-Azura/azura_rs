@@ -208,6 +208,12 @@ fn install(rawpkg: &str) {
     fs::remove_file("/META").unwrap();
     fs::remove_file(format!("/{}.footprint", pkg)).unwrap();
     fs::remove_file(format!("/{}", rawpkg)).unwrap();
+    if Path::new(&format!("/{}.pre-install", pkg)).exists() {
+        fs::remove_file(format!("/{}.pre-install", pkg)).unwrap();
+    }
+    if Path::new(&format!("/{}.post-install", pkg)).exists() {
+        fs::remove_file(format!("/{}.post-install", pkg)).unwrap();
+    }
 
 }
 
