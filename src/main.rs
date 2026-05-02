@@ -56,7 +56,7 @@ fn package() {
         }
     }
     let output = Command::new("bash")
-        .args(["-c", "source Pkgfile && echo $version && echo $name && echo $packager && echo $release && echo $description && echo $source"])
+        .args(["-c", "source Pkgfile && echo $version && echo $name && echo $packager && echo $release && echo $description && echo ${source[@]}"])
         .output()
         .unwrap();
     let stdout = String::from_utf8(output.stdout).unwrap();
@@ -84,14 +84,30 @@ fn package() {
     }
     fs::create_dir("work").unwrap();
     fs::create_dir("pkg").unwrap();
-    if Path::new("config").exists() {
-        fs::copy("config", "work/config").unwrap();
-    }
+    //if Path::new("config").exists() {
+    //    fs::copy("config", "work/config").unwrap();
+    //}
     let building = format!("{}/work", collection);
-    env::set_current_dir(&building).unwrap();
     println!("Switching to the work directory {}", building);
-    let tarball = download(&source);
-    extract(&tarball);
+    for src in source.split_whitespace() {
+        if src.contains("http") {
+            env::set_current_dir(&building).unwrap();
+            let tarball = download(src);
+            env::set_current_dir(&collection).unwrap();
+            if tarball.contains(".patch.gz") {
+                continue;
+            } else {
+                env::set_current_dir(&building).unwrap();
+                extract(&tarball);
+                env::set_current_dir(&collection).unwrap();
+
+            }
+        } else {
+            fs::copy(src, format!("work/{}", src)).unwrap();
+            env::set_current_dir(&building).unwrap();
+        }
+    }
+    env::set_current_dir(&building).unwrap();
     //let extracted = Path::new("{}/{}", collection, tarball)
     env::set_current_dir(&collection).unwrap();
     Command::new("bash")
@@ -151,8 +167,8 @@ fn install(rawpkg: &str) {
     }
     let opts = CopyOptions {
         overwrite: true,
-        follow_symlinks: true,
-        restrict_symlinks: true,
+        follow_symlinks: false,
+        restrict_symlinks: false,
         content_only: false,
         ..Default::default()
     };
