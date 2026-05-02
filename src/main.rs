@@ -112,13 +112,25 @@ fn package() {
     env::set_current_dir(&building).unwrap();
     //let extracted = Path::new("{}/{}", collection, tarball)
     env::set_current_dir(&collection).unwrap();
-    Command::new("bash")
+    match Command::new("bash")
     .args(["-c", "fakeroot bash -c 'source Pkgfile && PKG=$(pwd)/pkg && cd work && build'"])
     .env("MAKEFLAGS", format!("-j{}", std::thread::available_parallelism().map(|n| n.get()).unwrap_or(1)))
     .env("CFLAGS", "-O2 -pipe")
     .env("CXXFLAGS", "-O2 -pipe")
-    .status()
-    .unwrap();
+    //.status()
+    .status() {
+        Ok(_) => {
+            println!("Build succeded");
+            env::set_current_dir(&collection).unwrap();
+            fs::remove_dir_all("work").unwrap();
+        }
+        Err(e) => {
+            println!("The build failed");
+            std::process::exit(1);
+        }
+
+    }
+
     let prepare = format!("{}/pkg", collection);
     
     //env::set_current_dir(&prepare).unwrap();
@@ -133,6 +145,7 @@ fn package() {
         writeln!(footprint, "{}", list).unwrap();
     }
     fs::copy("META", "pkg/META").unwrap();
+    fs::remove_file("META").unwrap();
     fs::copy(format!("{}.footprint", name), format!("pkg/{}.footprint", name)).unwrap();
     if Path::new(&format!("{}/{}.pre-install", collection, name)).exists() {
         fs::copy(format!("{}.pre-install", name), format!("pkg/{}.pre-install", name)).unwrap();
@@ -151,6 +164,7 @@ fn package() {
     a.follow_symlinks(false);
     a.append_dir_all("", "pkg/").unwrap();
     a.finish().unwrap();
+    fs::remove_dir_all("pkg").unwrap();
 }
 
 
@@ -225,7 +239,7 @@ fn download(url: &str) -> String {
     // Checking lenght of the answer
     // Setting the progress bar style (random settings)
     let mut answer = reqwest::blocking::get(url).unwrap();
-    let progress = answer.content_length().unwrap();
+    let progress = answer.content_length().unwrap_or(0);
     let pb = ProgressBar::new(progress);
      pb.set_style(
         ProgressStyle::default_bar()
