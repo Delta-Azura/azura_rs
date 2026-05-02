@@ -121,7 +121,7 @@ fn package() {
     
     //env::set_current_dir(&prepare).unwrap();
     let mut footprint = File::create(format!("{}.footprint", name)).unwrap();
-    for entry in WalkDir::new(&prepare).follow_links(true) {
+    for entry in WalkDir::new(&prepare).follow_links(false) {
         let foot = entry.unwrap().path().display().to_string();
         let pathpkg = foot.split_once(&prepare).map(|(_,pathpkg)| pathpkg).unwrap().to_string();
         if pathpkg.is_empty() { continue; }
@@ -271,10 +271,13 @@ fn remove(rawpkg: &String) {
         let file = fs::read_to_string(format!("/var/lib/pkg/DB/{}/files", rawpkg)).unwrap();
         let content = file.lines();
         fs::remove_dir_all(format!("/var/lib/pkg/DB/{}", rawpkg));
+        let protected = ["bin", "lib", "lib64", "sbin"];
         for i in content {
-            let _ = fs::remove_file(format!("/{}", i));
-            let _ = fs::remove_dir(format!("/{}", i));
-            println!("Package has been correctly uninstalled !");
+            if !protected.contains(&i) {
+                let _ = fs::remove_file(format!("/{}", i));
+                let _ = fs::remove_dir(format!("/{}", i));
+            }
+            //println!("Package has been correctly uninstalled !");
         } 
     } else {
             println!("This package isn't installed, can't remove it");
