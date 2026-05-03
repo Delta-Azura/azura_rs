@@ -22,6 +22,8 @@ use recursive_copy::{copy_recursive, CopyOptions};
 use indicatif::{ProgressBar, ProgressStyle};
 use std::io::Read;
 use std::env::current_dir;
+use std::fs::metadata;
+
 //use walkdir_minimal_copy::{copy_recursive, CopyOptions};
 
 fn main() {
@@ -383,11 +385,15 @@ fn query(path: &String) {
 
 
 fn update(rawpkg: &String) {
+    eprintln!("DEBUG conflict: rawpkg = {:?}", rawpkg);
     let pkg = rawpkg.split_once('.').map(|(pkg, _)| pkg).unwrap().to_string();
-    println!("{}", pkg);
+    //println!("{}", pkg);
     if Path::new(&format!("/var/lib/pkg/DB/{}", pkg)).exists() {
         println!("removing previous package");
         remove(&pkg);
+        eprintln!("DEBUG cwd = {:?}", env::current_dir().unwrap());
+        eprintln!("DEBUG rawpkg = {:?}", rawpkg);
+        conflict(&rawpkg);
         println!("Installing the new one");
         install(&rawpkg);
     } else {
@@ -395,6 +401,67 @@ fn update(rawpkg: &String) {
         std::process::exit(1);
     }
 
+}
+
+fn conflict(rawpkg: &String) {
+    eprintln!("DEBUG conflict: rawpkg = {:?}", rawpkg);
+    let pkg = rawpkg.split_once('.').map(|(pkg, _)| pkg).unwrap().to_string();
+    if Path::new(&format!("/tmp/{}", pkg)).exists() {
+        fs::remove_dir_all(format!("/tmp/{}", pkg)).unwrap();
+    }
+    fs::create_dir(format!("/tmp/{}", pkg)).unwrap();
+    fs::copy(rawpkg, format!("/tmp/{}/{}", pkg, rawpkg)).unwrap();
+    env::set_current_dir(format!("/tmp/{}", pkg)).unwrap();
+    if rawpkg.ends_with(".tar.gz") || rawpkg.ends_with(".tgz") {
+        let file = fs::File::open(rawpkg).unwrap();
+        let mut archive = Archive::new(GzDecoder::new(file));
+        archive.unpack(".").unwrap();
+    }
+    for e in fs::read_dir("/var/lib/pkg/DB/.").unwrap().filter_map(|e| e.ok()) {
+        let directory_tmp = e.file_name();
+        let directory = directory_tmp.to_str().unwrap();
+        let target = fs::read_to_string(format!("/var/lib/pkg/DB/{}/files", directory)).expect("REASON");
+        let compare = fs::read_to_string(format!("/tmp/{}/{}.footprint", pkg, pkg)).expect("tbl");
+        println!("{}", compare);
+        for lines in target.lines() {
+            //let release = variables.next().unwrap();
+            for line in compare.lines() {
+                if  line == lines {
+                    let list = format!("{}", lines);
+                    if list.is_empty() { continue; }
+                    //file_type(&list);
+                    if file_type(&list) == true {
+                        let test = format!("/{}", &list);
+                        let owner = query(&test);
+                        //println!("{}"owner);
+                        std::process::exit(1)
+                    }
+                      
+                       // Ok(true) => {
+                        //}
+                        //Ok(false) => continue
+                        //.unwrap();
+                    //if metadata = None { continue; }
+                    //if metadata = None () { continue; }
+                    //let file_type = metadata.file_type();
+                    //if file_type.is_file() == true {
+                        //println!("This file already belongs to : {}", line);
+                        //std::process::exit(1)
+                    
+                }
+            }
+        }
+    }
+
+}
+
+fn file_type(list: &String) -> bool {
+    //let metadata = fs::metadata(list)?;
+    match fs::metadata(list) {
+        Ok(metadata) => metadata.is_file(),
+        Err(_) => false,
+    }
+    //assert!(!metadata.is_dir());
 }
 
 fn num_cpus() -> usize {
