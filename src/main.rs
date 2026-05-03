@@ -198,7 +198,11 @@ fn package() {
 
 fn install(rawpkg: &String) {
     //let pkg_name = rawpkg.split_once(".raw").map(|(name, _)| name).unwrap_or(rawpkg);
-    conflict(&rawpkg);
+    if Path::new("/tmp/conflict").exists() {
+        fs::remove_file("/tmp/conflict").unwrap();
+    } else {
+        conflict(&rawpkg);
+    }
     let pkg = rawpkg.split_once('.').map(|(pkg, _)| pkg).unwrap();
     fs::create_dir(format!("/var/lib/pkg/DB/{}", pkg)).unwrap();
     println!("Copying {} to /var/lib/pkg/DB/{}/{}", rawpkg, pkg, rawpkg);
@@ -391,11 +395,12 @@ fn update(rawpkg: &String) {
     if Path::new(&format!("/var/lib/pkg/DB/{}", pkg)).exists() {
         println!("removing previous package");
         remove(&pkg);
-        eprintln!("DEBUG cwd = {:?}", env::current_dir().unwrap());
-        eprintln!("DEBUG rawpkg = {:?}", rawpkg);
+        File::create("/tmp/conflict").unwrap();
         conflict(&rawpkg);
         println!("Installing the new one");
         install(&rawpkg);
+        fs::remove_file("/tmp/conflict");
+
     } else {
         println!("Package isn't installed");
         std::process::exit(1);
@@ -404,6 +409,7 @@ fn update(rawpkg: &String) {
 }
 
 fn conflict(rawpkg: &String) {
+    //File::create("/tmp/conflict").unwrap();
     let pkg = rawpkg.split_once('.').map(|(pkg, _)| pkg).unwrap().to_string();
     if Path::new(&format!("/tmp/{}", pkg)).exists() {
         fs::remove_dir_all(format!("/tmp/{}", pkg)).unwrap();
@@ -434,19 +440,8 @@ fn conflict(rawpkg: &String) {
                         let owner = query(&test);
                         //println!("{}"owner);
                         std::process::exit(1)
+                        
                     }
-                      
-                       // Ok(true) => {
-                        //}
-                        //Ok(false) => continue
-                        //.unwrap();
-                    //if metadata = None { continue; }
-                    //if metadata = None () { continue; }
-                    //let file_type = metadata.file_type();
-                    //if file_type.is_file() == true {
-                        //println!("This file already belongs to : {}", line);
-                        //std::process::exit(1)
-                    
                 }
             }
         }
