@@ -125,7 +125,7 @@ fn package() {
             fs::remove_dir_all("work").unwrap();
         }
         Err(e) => {
-            println!("The build failed");
+            println!("The build failed {}", e);
             std::process::exit(1);
         }
 
@@ -349,6 +349,19 @@ fn query(path: &String) {
             }
         }
     }
+}
+
+
+fn update(rawpkg: &String) {
+    let pkg = rawpkg.split_once('.').map(|(pkg, _)| pkg).unwrap().to_string();
+    if Path::new(&format!("/var/lib/pkg/DB/{}", pkg)).exists() {
+        remove(&pkg);
+        install(&rawpkg);
+    } else {
+        println!("Package isn't installed");
+        std::process::exit(1);
+    }
+
 }
 
 fn num_cpus() -> usize {
