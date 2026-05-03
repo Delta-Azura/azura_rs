@@ -196,8 +196,9 @@ fn package() {
 }
 
 
-fn install(rawpkg: &str) {
+fn install(rawpkg: &String) {
     //let pkg_name = rawpkg.split_once(".raw").map(|(name, _)| name).unwrap_or(rawpkg);
+    conflict(&rawpkg);
     let pkg = rawpkg.split_once('.').map(|(pkg, _)| pkg).unwrap();
     fs::create_dir(format!("/var/lib/pkg/DB/{}", pkg)).unwrap();
     println!("Copying {} to /var/lib/pkg/DB/{}/{}", rawpkg, pkg, rawpkg);
@@ -292,7 +293,7 @@ fn download(url: &str) -> String {
     tarball.to_string() //giving back file name
 }
 
-fn extract(tarball: &str) {
+fn extract(tarball: &String) {
     let source = File::open(tarball).unwrap();
     if tarball.ends_with(".tar.gz") || tarball.ends_with(".tgz") {
         let mut archive = Archive::new(GzDecoder::new(source));
@@ -385,7 +386,6 @@ fn query(path: &String) {
 
 
 fn update(rawpkg: &String) {
-    eprintln!("DEBUG conflict: rawpkg = {:?}", rawpkg);
     let pkg = rawpkg.split_once('.').map(|(pkg, _)| pkg).unwrap().to_string();
     //println!("{}", pkg);
     if Path::new(&format!("/var/lib/pkg/DB/{}", pkg)).exists() {
