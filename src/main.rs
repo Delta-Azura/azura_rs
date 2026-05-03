@@ -404,7 +404,6 @@ fn update(rawpkg: &String) {
 }
 
 fn conflict(rawpkg: &String) {
-    eprintln!("DEBUG conflict: rawpkg = {:?}", rawpkg);
     let pkg = rawpkg.split_once('.').map(|(pkg, _)| pkg).unwrap().to_string();
     if Path::new(&format!("/tmp/{}", pkg)).exists() {
         fs::remove_dir_all(format!("/tmp/{}", pkg)).unwrap();
@@ -417,11 +416,11 @@ fn conflict(rawpkg: &String) {
         let mut archive = Archive::new(GzDecoder::new(file));
         archive.unpack(".").unwrap();
     }
+    let compare = fs::read_to_string(format!("/tmp/{}/{}.footprint", pkg, pkg)).unwrap();
     for e in fs::read_dir("/var/lib/pkg/DB/.").unwrap().filter_map(|e| e.ok()) {
         let directory_tmp = e.file_name();
         let directory = directory_tmp.to_str().unwrap();
-        let target = fs::read_to_string(format!("/var/lib/pkg/DB/{}/files", directory)).expect("REASON");
-        let compare = fs::read_to_string(format!("/tmp/{}/{}.footprint", pkg, pkg)).expect("tbl");
+        let target = fs::read_to_string(format!("/var/lib/pkg/DB/{}/files", directory)).unwrap();
         println!("{}", compare);
         for lines in target.lines() {
             //let release = variables.next().unwrap();
@@ -452,7 +451,6 @@ fn conflict(rawpkg: &String) {
             }
         }
     }
-
 }
 
 fn file_type(list: &String) -> bool {
