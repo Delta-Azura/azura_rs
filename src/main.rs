@@ -21,6 +21,7 @@ use std::path::Path;
 use recursive_copy::{copy_recursive, CopyOptions};
 use indicatif::{ProgressBar, ProgressStyle};
 use std::io::Read;
+use std::env::current_dir;
 //use walkdir_minimal_copy::{copy_recursive, CopyOptions};
 
 fn main() {
@@ -45,6 +46,10 @@ fn main() {
     if args[1] == "query" {
         let argument = format!("{}", args[2]);
         query(&argument)
+    }
+    if args[1] == "update" {
+        let argument = format!("{}", args[2]);
+        update(&argument)
     }
 
 }
@@ -193,6 +198,7 @@ fn install(rawpkg: &str) {
     //let pkg_name = rawpkg.split_once(".raw").map(|(name, _)| name).unwrap_or(rawpkg);
     let pkg = rawpkg.split_once('.').map(|(pkg, _)| pkg).unwrap();
     fs::create_dir(format!("/var/lib/pkg/DB/{}", pkg)).unwrap();
+    println!("Copying {} to /var/lib/pkg/DB/{}/{}", rawpkg, pkg, rawpkg);
     fs::copy(rawpkg, format!("/var/lib/pkg/DB/{}/{}", pkg, rawpkg)).unwrap();
     env::set_current_dir(format!("/var/lib/pkg/DB/{}", pkg)).unwrap();
     if rawpkg.ends_with(".tar.gz") || rawpkg.ends_with(".tgz") {
@@ -329,6 +335,7 @@ fn info(rawpkg: &String) {
 }
 
 fn remove(rawpkg: &String) {
+    let current = current_dir().unwrap();
     let check = format!("/var/lib/pkg/DB/{}", rawpkg);
     if Path::new(&check).exists() {
         env::set_current_dir(format!("/var/lib/pkg/DB/{}", rawpkg)).unwrap();
@@ -346,6 +353,8 @@ fn remove(rawpkg: &String) {
     } else {
             println!("This package isn't installed, can't remove it");
     }
+    // Necessary for the update function.
+    env::set_current_dir(current).unwrap();
     //scanning the entire directory to find the right path
     //let entry = fs::read_dir(".")
     //    .unwrap()
@@ -375,8 +384,11 @@ fn query(path: &String) {
 
 fn update(rawpkg: &String) {
     let pkg = rawpkg.split_once('.').map(|(pkg, _)| pkg).unwrap().to_string();
+    println!("{}", pkg);
     if Path::new(&format!("/var/lib/pkg/DB/{}", pkg)).exists() {
+        println!("removing previous package");
         remove(&pkg);
+        println!("Installing the new one");
         install(&rawpkg);
     } else {
         println!("Package isn't installed");
