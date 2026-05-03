@@ -49,11 +49,16 @@ fn main() {
 
 }
 
+// Match can have different implementation depending on the type of error
 fn package() {
     match fs::exists("Pkgfile") {
-        Ok(_) => println!("Starting to build"),
+        Ok(true) => println!("Starting to build"),
+        Ok(false) => {
+            println!("Pkgfile doesn't exist.");
+            std::process::exit(1);
+        }
         Err(e) => {
-            println!("Pkgfile doesn't exist. {e}");
+            println!("Error : {e}");
             std::process::exit(1);
         }
     }
@@ -119,13 +124,19 @@ fn package() {
     .env("CXXFLAGS", "-O2 -pipe")
     //.status()
     .status() {
-        Ok(_) => {
+        // need if s.success because of the type of answer from status
+        Ok(s) if s.success() => {
             println!("Build succeded");
             env::set_current_dir(&collection).unwrap();
             fs::remove_dir_all("work").unwrap();
         }
+        Ok(s) => {
+            // Don't ask
+            println!("The build failed (code {:?})", s.code());
+            std::process::exit(1);
+        }
         Err(e) => {
-            println!("The build failed {}", e);
+            println!("The build failed {e}");
             std::process::exit(1);
         }
 
@@ -134,6 +145,15 @@ fn package() {
     let prepare = format!("{}/pkg", collection);
     
     //env::set_current_dir(&prepare).unwrap();
+    if Path::new(&format!("{}.footprint", name)).exists() {
+        println!("Removing actual footprint");
+        fs::remove_file(format!("{}.footprint", name)).unwrap();
+    }
+    if Path::new(&format!("{}.{}.raw.tar.gz", name, version)).exists() {
+        println!("Removing the previous generated package");
+        fs::remove_file(format!("{}.{}.raw.tar.gz", name, version)).unwrap();
+    }
+    println!("Generating footprint");
     let mut footprint = File::create(format!("{}.footprint", name)).unwrap();
     for entry in WalkDir::new(&prepare).follow_links(false) {
         let foot = entry.unwrap().path().display().to_string();
@@ -158,6 +178,7 @@ fn package() {
         println!("No need to prepare post-installation");
     }
     //let packagename = format!("{}", name);
+    println!("Generating package");
     let tar = File::create(format!("{}.{}.raw.tar.gz", name, version)).unwrap();
     let enc = GzEncoder::new(tar, Compression::default());
     let mut a = tar::Builder::new(enc);
