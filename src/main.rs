@@ -437,9 +437,12 @@ fn conflict(rawpkg: &String) {
                     //file_type(&list);
                     if file_type(&list) == true {
                         let test = format!("/{}", &list);
-                        let owner = query(&test);
+                        if test != "/usr/share/info/dir" {
+                            let owner = query(&test);
                         //println!("{}"owner);
-                        std::process::exit(1)
+                            std::process::exit(1)
+
+                        }
                         
                     }
                 }
