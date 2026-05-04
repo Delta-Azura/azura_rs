@@ -25,6 +25,8 @@ mod package;
 mod download;
 mod extract;
 mod file_type;
+mod files;
+use crate::files::files;
 use crate::install::install;
 use crate::info::info;
 use crate::query::query;
@@ -35,7 +37,7 @@ use anyhow::{Result};
 
 
 
-fn main() -> Result<()> {
+pub fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().collect();
     if args[1] == "package" {
         package()?;
@@ -68,6 +70,11 @@ fn main() -> Result<()> {
         update(&argument);
         return Ok(())
     }
+    if args[1] == "files" {
+        let argument = format!("{}", args[2]);
+        files(&argument)?;
+        return Ok(())
+    } 
     return Ok(());
 }
 

@@ -23,6 +23,8 @@ use liblzma::read::XzDecoder;
 use flate2::read::GzDecoder;
 use std::fs::File;
 use rpm;
+use std::process::Command;
+
 
 
 pub fn extract(tarball: &String) {
@@ -52,5 +54,13 @@ pub fn extract(tarball: &String) {
             Err(e) if e.to_string().contains("AlreadyExists") => {},
             Err(e) => panic!("{}", e),
         }
+    }
+    if tarball.ends_with(".deb") {
+        let debian = format!("ar -x {}", tarball);
+        Command::new("bash")
+        .args(["-c", &debian])
+        .output()
+        .unwrap();
+
     }
 }
