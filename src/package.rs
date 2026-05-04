@@ -76,12 +76,14 @@ pub fn package() -> Result<()> {
     //    }
 
     //}
+    let actual = std::env::current_dir().unwrap();
+    let col = actual.parent().unwrap().file_name().unwrap().to_str().unwrap().to_string();
     let collection = std::env::current_dir().unwrap();
     let current = collection.file_name().unwrap().to_str().unwrap().to_string();
     let collection = collection.display().to_string();
-    println!("Setting collection as : {}", current);
+    println!("Setting collection as : {}", col);
     let mut meta = File::create("META").unwrap();
-    let metadata = format!("N{}\nV{}\nr{}\nc{}\nD{}\nP{}", name, version, release, current, description, packager);
+    let metadata = format!("N{}\nV{}\nr{}\nc{}\nD{}\nP{}", name, version, release, col, description, packager);
     write!(meta, "{}", metadata).unwrap();
     if Path::new("work").exists() {
         println!("Removing work/");

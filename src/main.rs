@@ -26,6 +26,8 @@ mod download;
 mod extract;
 mod file_type;
 mod files;
+mod list;
+use crate::list::list;
 use crate::files::files;
 use crate::install::install;
 use crate::info::info;
@@ -73,6 +75,10 @@ fn main() -> Result<()> {
     if args[1] == "files" {
         let argument = format!("{}", args[2]);
         files(&argument)?;
+        return Ok(())
+    } 
+    if args[1] == "list" {
+        list();
         return Ok(())
     } 
     return Ok(());

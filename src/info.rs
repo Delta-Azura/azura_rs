@@ -43,5 +43,7 @@ pub fn info(rawpkg: &String) -> Result<()> {
     println!("Description = {}", description);
     let packager = content.iter().find(|l| l.starts_with('P')).unwrap().to_string().split_once('P').map(|(_, packager)| packager).unwrap().to_string();
     println!("Packager = {}", packager);
+    let collection = content.iter().find(|l| l.starts_with('c')).unwrap().to_string().split_once('c').map(|(_, collection)| collection).unwrap().to_string();
+    println!("Collection = {}", collection);
     Ok(()) 
 }
