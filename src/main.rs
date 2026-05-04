@@ -15,28 +15,6 @@
 //    with this program; if not, write to the Free Software Foundation, Inc.,
 //    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-use std::io::{stdout, BufWriter};
-use std::io;
-use std::env;
-use std::fs;
-use std::process::Command;
-use std::fs::File;
-use std::io::Write;
-use flate2::read::GzDecoder;
-use tar::Archive;
-use bzip2::read::BzDecoder;
-use xz2::read::XzDecoder;
-use walkdir::WalkDir;
-use std::fs::write;
-use tar::Builder;
-use xz2::write::XzEncoder;
-use flate2::Compression;
-use flate2::write::GzEncoder;
-use std::path::Path;
-use recursive_copy::{copy_recursive, CopyOptions};
-use std::io::Read;
-use std::env::current_dir;
-use std::fs::metadata;
 mod install;
 mod conflict;
 mod info;
