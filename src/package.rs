@@ -28,7 +28,7 @@ use crate::download::download;
 use crate::extract::extract;
 use walkdir::WalkDir;
 use tar::Builder;
-use xz2::write::XzEncoder;
+use liblzma::write::XzEncoder;
 use flate2::Compression;
 use flate2::write::GzEncoder;
 use anyhow::{Result, Context};
@@ -67,6 +67,15 @@ pub fn package() -> Result<()> {
     let release = variables.next().unwrap();
     let description = variables.next().unwrap();
     let source = variables.next().unwrap();
+    //let makedepends = variables.next().unwrap();
+    //if makedepends == "none" {
+    //    println!("No makedepends");
+    //} else {
+    //    for i makedepends.lines() {
+
+    //    }
+
+    //}
     let collection = std::env::current_dir().unwrap();
     let current = collection.file_name().unwrap().to_str().unwrap().to_string();
     let collection = collection.display().to_string();
@@ -76,11 +85,11 @@ pub fn package() -> Result<()> {
     write!(meta, "{}", metadata).unwrap();
     if Path::new("work").exists() {
         println!("Removing work/");
-        fs::remove_dir_all("work")?;
+        fs::remove_dir_all("work/")?;
     }
     if Path::new("pkg").exists() {
         println!("Removing pkg/");
-        fs::remove_dir_all("pkg")?;
+        fs::remove_dir_all("pkg/")?;
     }
     fs::create_dir("work")?;
     fs::create_dir("pkg")?;
@@ -91,16 +100,22 @@ pub fn package() -> Result<()> {
     println!("Switching to the work directory {}", building);
     for src in source.split_whitespace() {
         if src.contains("http") {
-            env::set_current_dir(&building)?;
-            let tarball = download(src)?;
-            env::set_current_dir(&collection)?;
-            if tarball.contains(".patch.gz") {
-                continue;
+            if src.contains("rpm") {
+                let tarball = download(src)?;
+                fs::remove_dir("work/").unwrap();
+                //env::set_current_dir("/home/alexis/vivaldi")?;
+                extract(&tarball)
             } else {
                 env::set_current_dir(&building)?;
-                extract(&tarball);
+                let tarball = download(src)?;
                 env::set_current_dir(&collection)?;
-
+                if tarball.contains(".patch.gz") {
+                    continue;
+                } else {
+                    env::set_current_dir(&building)?;
+                    extract(&tarball);
+                    env::set_current_dir(&collection)?;
+                }
             }
         } else {
             fs::copy(src, format!("work/{}", src))?;
