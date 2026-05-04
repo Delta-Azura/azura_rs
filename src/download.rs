@@ -2,14 +2,14 @@ use indicatif::{ProgressBar, ProgressStyle};
 use std::io::Read;
 use std::fs::File;
 use std::io::Write;
+use anyhow::{Result, Context};
 
-
-pub fn download(url: &str) -> String {
+pub fn download(url: &str) -> Result<String> {
     // Personnal notes :
     // Setting up the first variable to get the answer
     // Checking lenght of the answer
     // Setting the progress bar style (random settings)
-    let mut answer = reqwest::blocking::get(url).unwrap();
+    let mut answer = reqwest::blocking::get(url)?;
     let progress = answer.content_length().unwrap_or(0);
     let pb = ProgressBar::new(progress);
      pb.set_style(
@@ -22,7 +22,7 @@ pub fn download(url: &str) -> String {
     let mut buf = [0u8; 8192];
     //let bytes = answer.bytes().unwrap();
     let tarball = url.split('/').last().unwrap();
-    let mut source = File::create(tarball).unwrap();
+    let mut source = File::create(tarball)?;
     // As the downloading goes on we read the answer from the buffer
     // We write into the file we are downloading and we move the progress bar forward.
     loop {
@@ -31,5 +31,6 @@ pub fn download(url: &str) -> String {
         source.write_all(&buf[..n]).unwrap();
         pb.inc(n as u64);
     }
-    tarball.to_string() //giving back file name
+    //giving back file name or the error 
+    return Ok(tarball.to_string())
 }

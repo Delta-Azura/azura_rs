@@ -2,15 +2,18 @@ use std::env;
 use std::fs;
 use std::path::Path;
 use std::env::current_dir;
+use anyhow::{Result, Context};
+use std::fs::File;
 
 
-
-pub fn remove(rawpkg: &String) {
-    let current = current_dir().unwrap();
+pub fn remove(rawpkg: &String) -> Result<()> {
+    File::create("/var/cache/raw.tmp")?;
+    let _ = fs::remove_file("/var/cache/raw.tmp");
+    let current = current_dir()?;
     let check = format!("/var/lib/pkg/DB/{}", rawpkg);
     if Path::new(&check).exists() {
-        env::set_current_dir(format!("/var/lib/pkg/DB/{}", rawpkg)).unwrap();
-        let file = fs::read_to_string(format!("/var/lib/pkg/DB/{}/files", rawpkg)).unwrap();
+        env::set_current_dir(format!("/var/lib/pkg/DB/{}", rawpkg))?;
+        let file = fs::read_to_string(format!("/var/lib/pkg/DB/{}/files", rawpkg))?;
         let content = file.lines();
         fs::remove_dir_all(format!("/var/lib/pkg/DB/{}", rawpkg));
         let protected = ["bin", "lib", "lib64", "sbin"];
@@ -34,4 +37,5 @@ pub fn remove(rawpkg: &String) {
     //if let Some(e) = entry {
     //    let directory_tmp = e.file_name(); 
     //    let directory = directory_tmp.to_str().unwrap();
+    Ok(())
 }

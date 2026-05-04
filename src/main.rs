@@ -31,35 +31,43 @@ use crate::query::query;
 use crate::remove::remove;
 use crate::update::update;
 use crate::package::package;
+use anyhow::{Result};
 
 
-fn main() {
+
+fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().collect();
     if args[1] == "package" {
-        package()
+        package()?;
+        return Ok(());
     } 
 
     if args[1] == "install" {
         let argument = format!("{}", args[2]);
-        install(&argument)
+        install(&argument);
+        return Ok(());
     }
 
     if args[1] == "info" {
         let argument = format!("{}", args[2]);
-        info(&argument)
+        info(&argument)?;
+        return Ok(())
     }
     if args[1] == "remove" {
         let argument = format!("{}", args[2]);
-        remove(&argument)
+        remove(&argument)?;
+        return Ok(())
     }
     if args[1] == "query" {
         let argument = format!("{}", args[2]);
-        query(&argument)
+        query(&argument);
+        return Ok(())
     }
     if args[1] == "update" {
         let argument = format!("{}", args[2]);
-        update(&argument)
+        update(&argument);
+        return Ok(())
     }
-
+    return Ok(());
 }
 

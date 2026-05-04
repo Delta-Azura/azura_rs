@@ -15,9 +15,11 @@ use tar::Builder;
 use xz2::write::XzEncoder;
 use flate2::Compression;
 use flate2::write::GzEncoder;
+use anyhow::{Result, Context};
 
 
-pub fn package() {
+
+pub fn package() -> Result<()> {
         match File::create("/var/cache/raw.tmp") {
         Ok(_) => {
             println!("You are building as root !");
@@ -58,14 +60,14 @@ pub fn package() {
     write!(meta, "{}", metadata).unwrap();
     if Path::new("work").exists() {
         println!("Removing work/");
-        fs::remove_dir_all("work").unwrap();
+        fs::remove_dir_all("work")?;
     }
     if Path::new("pkg").exists() {
         println!("Removing pkg/");
-        fs::remove_dir_all("pkg").unwrap();
+        fs::remove_dir_all("pkg")?;
     }
-    fs::create_dir("work").unwrap();
-    fs::create_dir("pkg").unwrap();
+    fs::create_dir("work")?;
+    fs::create_dir("pkg")?;
     //if Path::new("config").exists() {
     //    fs::copy("config", "work/config").unwrap();
     //}
@@ -73,25 +75,25 @@ pub fn package() {
     println!("Switching to the work directory {}", building);
     for src in source.split_whitespace() {
         if src.contains("http") {
-            env::set_current_dir(&building).unwrap();
-            let tarball = download(src);
-            env::set_current_dir(&collection).unwrap();
+            env::set_current_dir(&building)?;
+            let tarball = download(src)?;
+            env::set_current_dir(&collection)?;
             if tarball.contains(".patch.gz") {
                 continue;
             } else {
-                env::set_current_dir(&building).unwrap();
+                env::set_current_dir(&building)?;
                 extract(&tarball);
-                env::set_current_dir(&collection).unwrap();
+                env::set_current_dir(&collection)?;
 
             }
         } else {
-            fs::copy(src, format!("work/{}", src)).unwrap();
-            env::set_current_dir(&building).unwrap();
+            fs::copy(src, format!("work/{}", src))?;
+            env::set_current_dir(&building)?;
         }
     }
-    env::set_current_dir(&building).unwrap();
+    env::set_current_dir(&building)?;
     //let extracted = Path::new("{}/{}", collection, tarball)
-    env::set_current_dir(&collection).unwrap();
+    env::set_current_dir(&collection)?;
     match Command::new("bash")
     .args(["-c", "fakeroot bash -c 'source Pkgfile && PKG=$(pwd)/pkg && cd work && build'"])
     .env("MAKEFLAGS", format!("-j{}", std::thread::available_parallelism().map(|n| n.get()).unwrap_or(1)))
@@ -122,11 +124,11 @@ pub fn package() {
     //env::set_current_dir(&prepare).unwrap();
     if Path::new(&format!("{}.footprint", name)).exists() {
         println!("Removing actual footprint");
-        fs::remove_file(format!("{}.footprint", name)).unwrap();
+        fs::remove_file(format!("{}.footprint", name))?;
     }
     if Path::new(&format!("{}.{}.raw.tar.gz", name, version)).exists() {
         println!("Removing the previous generated package");
-        fs::remove_file(format!("{}.{}.raw.tar.gz", name, version)).unwrap();
+        fs::remove_file(format!("{}.{}.raw.tar.gz", name, version))?;
     }
     println!("Generating footprint");
     let mut footprint = File::create(format!("{}.footprint", name)).unwrap();
@@ -148,17 +150,18 @@ pub fn package() {
         println!("No need to prepare pre-installation");
     }
     if Path::new(&format!("{}/{}.post-install", collection, name)).exists() {
-        fs::copy(format!("{}.post-install", name), format!("pkg/{}.post-install", name)).unwrap();
+        fs::copy(format!("{}.post-install", name), format!("pkg/{}.post-install", name))?;
     } else {
         println!("No need to prepare post-installation");
     }
     //let packagename = format!("{}", name);
     println!("Generating package");
-    let tar = File::create(format!("{}.{}.raw.tar.gz", name, version)).unwrap();
+    let tar = File::create(format!("{}.{}.raw.tar.gz", name, version))?;
     let enc = GzEncoder::new(tar, Compression::default());
     let mut a = tar::Builder::new(enc);
     a.follow_symlinks(false);
-    a.append_dir_all("", "pkg/").unwrap();
+    a.append_dir_all("", "pkg/")?;
     a.finish().unwrap();
-    fs::remove_dir_all("pkg").unwrap();
+    fs::remove_dir_all("pkg")?;
+    Ok(())
 }

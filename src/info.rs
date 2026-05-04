@@ -1,10 +1,12 @@
 use std::fs;
 use std::env;
+use anyhow::{Result};
+use anyhow::Context;
 
 
-pub fn info(rawpkg: &String) {
+pub fn info(rawpkg: &String) -> Result<()> {
     //let path = format!("/var/lib/pkg/DB/");
-    env::set_current_dir(format!("/var/lib/pkg/DB/{}", rawpkg)).unwrap();
+    env::set_current_dir(format!("/var/lib/pkg/DB/{}", rawpkg)).context("Package isn't installed")?;
     // Add directory listing
     //let entry = fs::read_dir(".")
     //    .unwrap()
@@ -23,5 +25,6 @@ pub fn info(rawpkg: &String) {
     let description = content.iter().find(|l| l.starts_with('D')).unwrap().to_string().split_once('D').map(|(_, description)| description).unwrap().to_string();
     println!("Description = {}", description);
     let packager = content.iter().find(|l| l.starts_with('P')).unwrap().to_string().split_once('P').map(|(_, packager)| packager).unwrap().to_string();
-    println!("Packager = {}", packager);      
+    println!("Packager = {}", packager);
+    Ok(()) 
 }
