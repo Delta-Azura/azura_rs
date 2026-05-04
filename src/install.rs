@@ -26,6 +26,9 @@ use flate2::read::GzDecoder;
 use anyhow::{Result};
 use anyhow::Context;
 use std::fs::File;
+use walkdir::WalkDir;
+use std::io;
+use crate::file_type::file_type;
 
 
 
@@ -99,5 +102,37 @@ pub fn install(rawpkg: &String) -> Result<()> {
     if Path::new(&format!("/{}.post-install", pkg)).exists() {
         fs::remove_file(format!("/{}.post-install", pkg)).unwrap();
     }
+    let content = fs::read_to_string(format!("/var/lib/pkg/DB/{}/files", pkg)).unwrap();
+    //let content = line.lines();
+    if content.contains(".desktop") {
+        if Path::new("/usr/bin/gtk-update-icon-cache").exists() {
+            Command::new("bash")
+                // glib-compile-schemas /usr/share/glib-2.0/schemas
+            .args(["-c", "glib-compile-schemas /usr/share/glib-2.0/schemas"])
+            .status()
+            .unwrap();
+            println!("Compiling gschemas")
+        }
+        if Path::new("/usr/bin/gtk-update-icon-cache").exists() {
+            for entry in WalkDir::new("/usr/share/icons").max_depth(1).min_depth(1) {
+                let foot = entry.unwrap().path().display().to_string();
+                if file_type(&foot) == false {
+                    env::set_current_dir("/").unwrap();
+                    env::set_current_dir(&foot).unwrap();
+                    println!("{}", foot);
+                    if Path::new("index.theme").exists() {
+                        let directory = format!("/usr/bin/gtk-update-icon-cache -f -t {}", foot);
+                        Command::new("bash")
+                        .args(["-c", &directory])
+                        .status()
+                        .unwrap();
+                        println!("Updating icon cache");
+                    }
+                }
+                
+            }
+        }
+    }
+
     Ok(())
 }
