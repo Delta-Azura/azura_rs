@@ -48,4 +48,13 @@ pub fn conflict(rawpkg: &String) {
             }
         }
     }
+    for i in compare.lines() {
+        let r = format!("/{}", i);
+        if file_type(&r) == true {
+            if Path::new(&r).exists() {
+                println!("File {} already present on the system", i);
+                std::process::exit(1)
+            }
+        }
+    }
 }
