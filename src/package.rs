@@ -17,9 +17,15 @@ use flate2::Compression;
 use flate2::write::GzEncoder;
 
 
-
-
 pub fn package() {
+        match File::create("/var/cache/raw.tmp") {
+        Ok(_) => {
+            println!("You are building as root !");
+            fs::remove_file("/var/cache/raw.tmp");
+            std::process::exit(1)
+        }
+        Err(e) => {}
+    }
     match fs::exists("Pkgfile") {
         Ok(true) => println!("Starting to build"),
         Ok(false) => {
