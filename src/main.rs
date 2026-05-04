@@ -37,7 +37,7 @@ use anyhow::{Result};
 
 
 
-pub fn main() -> Result<()> {
+fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().collect();
     if args[1] == "package" {
         package()?;
