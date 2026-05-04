@@ -120,14 +120,12 @@ pub fn install(rawpkg: &String) -> Result<()> {
                     env::set_current_dir("/").unwrap();
                     env::set_current_dir(&foot).unwrap();
                     println!("{}", foot);
-                    if Path::new("index.theme").exists() {
-                        let directory = format!("/usr/bin/gtk-update-icon-cache -f -t {}", foot);
-                        Command::new("bash")
-                        .args(["-c", &directory])
-                        .status()
-                        .unwrap();
-                        println!("Updating icon cache");
-                    }
+                    let directory = format!("/usr/bin/gtk-update-icon-cache -f -t {}", foot);
+                    Command::new("bash")
+                    .args(["-c", &directory])
+                    .status()
+                    .unwrap();
+                    println!("Updating icon cache");
                 }
                 
             }
