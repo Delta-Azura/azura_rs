@@ -6,10 +6,16 @@ use recursive_copy::{copy_recursive, CopyOptions};
 use crate::conflict::conflict;
 use tar::Archive;
 use flate2::read::GzDecoder;
+use anyhow::{Result};
+use anyhow::Context;
+use std::fs::File;
 
 
-pub fn install(rawpkg: &String) {
+
+pub fn install(rawpkg: &String) -> Result<()> {
     //let pkg_name = rawpkg.split_once(".raw").map(|(name, _)| name).unwrap_or(rawpkg);
+    File::create("/var/cache/tmp.raw").context("Not running as root, aborting")?;
+    fs::remove_file("/var/cache/tmp.raw").unwrap();
     if Path::new("/tmp/conflict").exists() {
         fs::remove_file("/tmp/conflict").unwrap();
     } else {
@@ -76,5 +82,5 @@ pub fn install(rawpkg: &String) {
     if Path::new(&format!("/{}.post-install", pkg)).exists() {
         fs::remove_file(format!("/{}.post-install", pkg)).unwrap();
     }
-
+    Ok(())
 }

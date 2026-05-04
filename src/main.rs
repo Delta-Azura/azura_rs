@@ -44,7 +44,7 @@ fn main() -> Result<()> {
 
     if args[1] == "install" {
         let argument = format!("{}", args[2]);
-        install(&argument);
+        install(&argument)?;
         return Ok(());
     }
 
