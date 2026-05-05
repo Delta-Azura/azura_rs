@@ -17,9 +17,7 @@ pub fn depends(pkg: &str) {//-> Result<(), String> {
             continue;
         }
         //let rawwpkg = format!("{}", rawpkg);
-        if Path::new(&format!("/var/lib/pkg/DB/{}/META", rawpkg)).exists() {
-            continue
-        } else {
+        if !Path::new(&format!("/var/lib/pkg/DB/{}/META", rawpkg)).exists() {
             println!("{} isn't installed", rawpkg);
             std::process::exit(1)
         }

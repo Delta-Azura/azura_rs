@@ -91,6 +91,7 @@ fn main() -> Result<()> {
     }
     if args[1] == "depends" {
         depends(&args[2]);
+        return Ok(())
     }
     return Ok(());
 }
