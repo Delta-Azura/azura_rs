@@ -16,7 +16,7 @@ pub fn depends(pkg: &str) {//-> Result<(), String> {
         if !visited().insert(rawpkg.clone()) {
             continue;
         }
-        println!("{}", rawpkg)
+        println!("{}", rawpkg);
         //let rawwpkg = format!("{}", rawpkg);
         if !Path::new(&format!("/var/lib/pkg/DB/{}/META", rawpkg)).exists() {
             println!("{} isn't installed", rawpkg);
