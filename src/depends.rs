@@ -31,6 +31,7 @@ pub fn depends(pkg: &str) {//-> Result<(), String> {
                 for dep in deps.lines() {
                     let name = dep.trim_end_matches(|c: char| c.is_numeric());
                     stack.push(name.to_string());
+                    println!("pushing {}", name);
                 }
                // for e in name.lines() {
                     //if Path::new(format!("/var/lib/pkg/DB/{}", e)).exists() {
