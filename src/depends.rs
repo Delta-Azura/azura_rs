@@ -5,7 +5,7 @@ use std::path::Path;
 
 pub fn depends(pkg: &str) {//-> Result<(), String> {
     let mut stack = vec![pkg.to_string()];
-    let mut visited = std::collections::HashSet::new;
+    let mut visited = std::collections::HashSet::new();
 
     //let path = format!("/var/lib/pkg/DB/{}/META", pkg);
     //let file = fs::read_to_string(format!("/var/lib/pkg/DB/{}/META", pkg)).unwrap();
@@ -13,7 +13,7 @@ pub fn depends(pkg: &str) {//-> Result<(), String> {
    // let mut content: Vec<String> = file.lines().map(|l| l.to_string()).collect();
     //let deps = content.lines().filter(|l| l.starts_with('R'));
     while let Some(rawpkg) = stack.pop() {
-        if !visited().insert(rawpkg.clone()) {
+        if !visited.insert(rawpkg.clone()) {
             continue;
         }
         println!("{}", rawpkg);
@@ -30,7 +30,7 @@ pub fn depends(pkg: &str) {//-> Result<(), String> {
             if let Some((_, deps)) = i.split_once('R') {
                 for dep in deps.lines() {
                     let name = dep.trim_end_matches(|c: char| c.is_numeric());
-                    if !visited().contains(name) {
+                    if !visited.contains(name) {
                         stack.push(name.to_string());
                         //println!("pushing {}", name);
                     }
