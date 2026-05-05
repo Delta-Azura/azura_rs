@@ -27,6 +27,8 @@ mod extract;
 mod file_type;
 mod files;
 mod list;
+mod libs;
+use crate::libs::libs;
 use crate::list::list;
 use crate::files::files;
 use crate::install::install;
@@ -81,6 +83,10 @@ fn main() -> Result<()> {
         list();
         return Ok(())
     } 
+    if args[1] == "libs" {
+        libs(&args[2], args.get(3).map(|s| s.as_str()))?;
+        return Ok(())
+    }
     return Ok(());
 }
 
