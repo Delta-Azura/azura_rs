@@ -28,7 +28,7 @@ use std::fs;
 
 
 pub fn index() -> Result <()> {
-    if let Ok((mode, path)) = getconf() {
+    if let Ok((mode, path, trash)) = getconf() {
         if mode == "source" {
             if Path::new("index.raw").exists() {
                 let question = Question::new("The index already exists, do you want to update it ? [y/n]")

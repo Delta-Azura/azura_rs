@@ -23,20 +23,21 @@ use std::env;
 use anyhow::Context;
 
 
-pub fn getconf() ->  Result<(String, String), String> {
+pub fn getconf() ->  Result<(String, String, String), String> {
     match Path::new("/etc/raw.conf").exists() {
         true => {
             let config = fs::read_to_string("/etc/raw.conf").unwrap();
             if config.clone().contains("mode binary") {
-                let repo = config.clone().split_once("url").map(|(_, repo)| repo).unwrap().to_string();
+                let repo = config.clone().split_once("source").map(|(_, repo)| repo).unwrap().to_string();
+                let url = config.lines().find(|l| l.starts_with("http")).unwrap().to_string();
                 env::set_current_dir(&repo.trim()).unwrap();
-                return Ok(("binary".to_string(), repo));
+                return Ok(("binary".to_string(), repo, url));
             }
             if config.clone().contains("mode source") {
                 let root = config.clone().split_once("root").map(|(_, root)| root).unwrap().to_string();
                 println!("{}", root);
                 env::set_current_dir(&root.trim()).unwrap();//.context("Repertory doesn't exists")?;
-                return Ok(("source".to_string(), root.to_string()));
+                return Ok(("source".to_string(), root.to_string(), String::new()));
             } else {
                 return Err("not specified".to_string());
             }

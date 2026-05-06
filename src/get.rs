@@ -26,7 +26,7 @@ use crate::depends::depends;
 
 
 pub fn get(pkg: &str) -> Result<()> {
-    let (mode, url) = getconf().unwrap();
+    let (mode, trash, url) = getconf().unwrap();
     if mode != "binary" {
         println!("Raw is used in binary mode, cannot connect to the repo");
         std::process::exit(1);
