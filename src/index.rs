@@ -51,5 +51,30 @@ pub fn index() -> Result <()> {
             }
         }
     }
+
+    if let Some(repo) = getconf() {
+        if Path::new("index.raw").exists() {
+            let question = Question::new("The index already exists, do you want to update it ? [y/n] : ")
+                .yes_no()
+                .until_acceptable()
+                .default(Answer::YES)
+                .show_defaults()
+                .clarification("Please enter either 'yes' or 'no' ")
+                .ask();
+            if question == Some(Answer::YES) {
+                fs::remove_file("index.raw").unwrap();
+                let mut rawfile = File::create("index.raw").context("This directory isn't usable as non-root, aborting")?;
+                for entry in WalkDir::new(&repo.trim()).max_depth(2).min_depth(2) {
+                    let entries = entry.unwrap().path().display().to_string().split_once(&repo.trim()).map(|(_, entries)| entries).unwrap().to_string().split_once("/").map(|(_, remove)| remove).unwrap().to_string();
+                    let pkgfile = fs::read_to_string(&format!("{}/Pkgfile", entries)).unwrap();
+                    let mut content: Vec<String> = pkgfile.lines().map(|l| l.to_string()).collect();
+                    let version = content.iter().find(|version| version.starts_with("version")).unwrap().to_string();
+                    let release = content.iter().find(|release| release.starts_with("release")).unwrap().to_string();
+                    writeln!(rawfile, "{}", &format!("{}-{}-{}", entries, version, release));
+                }
+            }
+
+        }
+    } 
     Ok(())
 }
