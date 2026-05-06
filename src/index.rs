@@ -71,7 +71,7 @@ pub fn index() -> Result <()> {
                     for entry in WalkDir::new(&path.trim()).max_depth(2).min_depth(2) {
                         let entries = entry.unwrap().path().display().to_string().split_once(&path.trim()).map(|(_, entries)| entries).unwrap().to_string().split_once("/").map(|(_, remove)| remove).unwrap().to_string();
                         //println!("{}", entries)
-                        let pkgfile = fs::read_to_string(&format!("{}/Pkgfile", entries)).unwrap();
+                        let pkgfile = fs::read_to_string(&format!("{}/Pkgfile", entries)).unwrap_or("".to_string());
                         let mut content: Vec<String> = pkgfile.lines().map(|l| l.to_string()).collect();
                         let version = content.iter().find(|version| version.starts_with("version")).unwrap_or(&"version=unknown".to_string()).to_string();
                         let release = content.iter().find(|release| release.starts_with("release")).unwrap_or(&"release=unknown".to_string()).to_string();
@@ -83,7 +83,7 @@ pub fn index() -> Result <()> {
                 for entry in WalkDir::new(&path.trim()).max_depth(2).min_depth(2) {
                     let entries = entry.unwrap().path().display().to_string().split_once(&path.trim()).map(|(_, entries)| entries).unwrap().to_string().split_once("/").map(|(_, remove)| remove).unwrap().to_string();
                     //println!("{}", entries);
-                    let pkgfile = fs::read_to_string(&format!("{}/Pkgfile", entries)).unwrap();
+                    let pkgfile = fs::read_to_string(&format!("{}/Pkgfile", entries)).unwrap_or("".to_string());
                     let mut content: Vec<String> = pkgfile.lines().map(|l| l.to_string()).collect();
                     let version = content.iter().find(|version| version.starts_with("version")).unwrap_or(&"version=unknown".to_string()).to_string();
                     let release = content.iter().find(|release| release.starts_with("release")).unwrap_or(&"release=unknown".to_string()).to_string();
