@@ -29,6 +29,10 @@ mod files;
 mod list;
 mod libs;
 mod depends;
+mod getconf;
+mod index;
+use crate::index::index;
+use crate::getconf::getconf;
 use crate::depends::depends;
 use crate::libs::libs;
 use crate::list::list;
@@ -91,6 +95,14 @@ fn main() -> Result<()> {
     }
     if args[1] == "depends" {
         depends(&args[2]);
+        return Ok(())
+    }
+    if args[1] == "getconf" {
+        println!("{:?}", getconf());
+        return Ok(())
+    }
+    if args[1] == "index" {
+        index()?;
         return Ok(())
     }
     return Ok(());
