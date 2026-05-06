@@ -36,7 +36,7 @@ pub fn getconf() -> Option<String> {
                 println!("{}", root);
                 env::set_current_dir(&root.trim()).unwrap();//.context("Repertory doesn't exists")?;
 
-                File::create("Onyx.tmp").unwrap();//.context("This repertory isn't usable as not root, aborting")?;
+                //File::create("Onyx.tmp").unwrap();//.context("This repertory isn't usable as not root, aborting")?;
                 return Some(root)
             }
         }

@@ -39,12 +39,13 @@ pub fn index() -> Result <()> {
                 .ask();
             if question == Some(Answer::YES) {
                 fs::remove_file("index.raw").unwrap();
-                let mut rawfile = File::create("index.raw").context("This directory isn't usable as non-root, aborting")?;
+                let mut rawfile = File::create(&format!("{}/index.raw", root)).context("This directory isn't usable as non-root, aborting")?;
                 for entry in WalkDir::new(&root.trim()).max_depth(2).min_depth(2) {
             //File::open("index.raw").unwrap();
                     let entries = entry.unwrap().path().display().to_string().split_once(&root.trim()).map(|(_, entries)| entries).unwrap().to_string().split_once("/").map(|(_, remove)| remove).unwrap().to_string();
                     writeln!(rawfile,"{}", entries).unwrap();
                 }
+                
             } else {
                 println!("Aborting");
                 std::process::exit(0)
