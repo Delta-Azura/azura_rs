@@ -70,6 +70,7 @@ pub fn index() -> Result <()> {
                     let mut rawfile = File::create("index.raw").context("This directory isn't usable as non-root, aborting")?;
                     for entry in WalkDir::new(&path.trim()).max_depth(2).min_depth(2) {
                         let entries = entry.unwrap().path().display().to_string().split_once(&path.trim()).map(|(_, entries)| entries).unwrap().to_string().split_once("/").map(|(_, remove)| remove).unwrap().to_string();
+                        //println!("{}", entries)
                         let pkgfile = fs::read_to_string(&format!("{}/Pkgfile", entries)).unwrap();
                         let mut content: Vec<String> = pkgfile.lines().map(|l| l.to_string()).collect();
                         let version = content.iter().find(|version| version.starts_with("version")).unwrap().to_string();
@@ -81,7 +82,7 @@ pub fn index() -> Result <()> {
                 let mut rawfile = File::create("index.raw").context("This directory isn't usable as non-root, aborting")?;
                 for entry in WalkDir::new(&path.trim()).max_depth(2).min_depth(2) {
                     let entries = entry.unwrap().path().display().to_string().split_once(&path.trim()).map(|(_, entries)| entries).unwrap().to_string().split_once("/").map(|(_, remove)| remove).unwrap().to_string();
-                    println!("{}", entries);
+                    //println!("{}", entries);
                     let pkgfile = fs::read_to_string(&format!("{}/Pkgfile", entries)).unwrap();
                     let mut content: Vec<String> = pkgfile.lines().map(|l| l.to_string()).collect();
                     let version = content.iter().find(|version| version.starts_with("version")).unwrap().to_string();

@@ -29,6 +29,7 @@ pub fn getconf() ->   Result<(String, String), String> {
             let config = fs::read_to_string("/etc/raw.conf").unwrap();
             if config.clone().contains("mode binary") {
                 let repo = config.clone().split_once("url").map(|(_, repo)| repo).unwrap().to_string();
+                env::set_current_dir(&repo.trim()).unwrap();
                 return Ok(("binary".to_string(), repo));
             }
             if config.clone().contains("mode source") {
