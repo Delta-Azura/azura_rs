@@ -32,7 +32,7 @@ pub fn get(pkg: &str) -> Result<()> {
         std::process::exit(1);
     }
     env::set_current_dir("/var/cache/").unwrap();
-    let metadata = download(&format!("{}/metadata", url))?;
+    let metadata = download(&format!("{}/index.raw", url))?;
     if metadata.contains(&format!("{}", pkg)) {
         let version = metadata.split_once('.').map(|(_, version)| version).unwrap();
         let release = metadata.split_once('#').map(|(_, release)| release).unwrap();
