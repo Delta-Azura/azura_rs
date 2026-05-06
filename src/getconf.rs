@@ -23,7 +23,7 @@ use std::env;
 use anyhow::Context;
 
 
-pub fn getconf() ->   Result<(String, String), String> {
+pub fn getconf() ->  Result<(String, String), String> {
     match Path::new("/etc/raw.conf").exists() {
         true => {
             let config = fs::read_to_string("/etc/raw.conf").unwrap();

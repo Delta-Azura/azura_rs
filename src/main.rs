@@ -32,6 +32,8 @@ mod depends;
 mod getconf;
 mod index;
 mod build;
+mod get;
+use crate::get::get;
 use crate::build::build;
 use crate::index::index;
 use crate::getconf::getconf;
@@ -109,6 +111,10 @@ fn main() -> Result<()> {
     }
     if args[1] == "build" {
         build(&args[2])?;
+        return Ok(())
+    }
+    if args[1] == "get" {
+        get(&args[2])?;
         return Ok(())
     }
     return Ok(());

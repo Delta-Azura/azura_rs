@@ -20,7 +20,7 @@ use std::collections::HashSet;
 use anyhow::Context;
 use std::path::Path;
 
-pub fn depends(pkg: &str) {//-> Result<(), String> {
+pub fn depends(pkg: &str) -> Vec<String> {  //-> Result<(), String> {
     let mut stack = vec![pkg.to_string()];
     let mut visited = std::collections::HashSet::new();
 
@@ -65,7 +65,8 @@ pub fn depends(pkg: &str) {//-> Result<(), String> {
         }
         //println!("{}", rawpkg);
     }
+    //return stack.to_string()
     //println!("{}", rawpkg);
     //Ok(())
-    
+    return stack
 }
