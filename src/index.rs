@@ -28,45 +28,59 @@ use std::fs;
 
 
 pub fn index() -> Result <()> {
-    if let Some(root) = getconf() {
-        if Path::new("index.raw").exists() {
-            let question = Question::new("The index already exists, do you want to update it ? [y/n]")
-                .yes_no()
-                .until_acceptable()
-                .default(Answer::YES)
-                .show_defaults()
-                .clarification("Please enter either 'yes' or 'no'\n")
-                .ask();
-            if question == Some(Answer::YES) {
-                fs::remove_file("index.raw").unwrap();
-                let mut rawfile = File::create(&format!("{}/index.raw", root)).context("This directory isn't usable as non-root, aborting")?;
-                for entry in WalkDir::new(&root.trim()).max_depth(2).min_depth(2) {
-            //File::open("index.raw").unwrap();
-                    let entries = entry.unwrap().path().display().to_string().split_once(&root.trim()).map(|(_, entries)| entries).unwrap().to_string().split_once("/").map(|(_, remove)| remove).unwrap().to_string();
-                    writeln!(rawfile,"{}", entries).unwrap();
+    if let Ok((mode, path)) = getconf() {
+        if mode == "source" {
+            if Path::new("index.raw").exists() {
+                let question = Question::new("The index already exists, do you want to update it ? [y/n]")
+                    .yes_no()
+                    .until_acceptable()
+                    .default(Answer::YES)
+                    .show_defaults()
+                    .clarification("Please enter either 'yes' or 'no'\n")
+                    .ask();
+                if question == Some(Answer::YES) {
+                    fs::remove_file("index.raw").unwrap();
+                    let mut rawfile = File::create("index.raw").context("This directory isn't usable as non-root, aborting")?;
+                    for entry in WalkDir::new(&path.trim()).max_depth(2).min_depth(2) {
+                        File::open("index.raw").unwrap();
+                        let entries = entry.unwrap().path().display().to_string().split_once(&path.trim()).map(|(_, entries)| entries).unwrap().to_string().split_once("/").map(|(_, remove)| remove).unwrap().to_string();
+                        writeln!(rawfile,"{}", entries).unwrap();
+                    }
                 }
                 
             } else {
-                println!("Aborting");
-                std::process::exit(0)
-            }
-        }
-    }
-
-    if let Some(repo) = getconf() {
-        if Path::new("index.raw").exists() {
-            let question = Question::new("The index already exists, do you want to update it ? [y/n] : ")
-                .yes_no()
-                .until_acceptable()
-                .default(Answer::YES)
-                .show_defaults()
-                .clarification("Please enter either 'yes' or 'no' ")
-                .ask();
-            if question == Some(Answer::YES) {
-                fs::remove_file("index.raw").unwrap();
                 let mut rawfile = File::create("index.raw").context("This directory isn't usable as non-root, aborting")?;
-                for entry in WalkDir::new(&repo.trim()).max_depth(2).min_depth(2) {
-                    let entries = entry.unwrap().path().display().to_string().split_once(&repo.trim()).map(|(_, entries)| entries).unwrap().to_string().split_once("/").map(|(_, remove)| remove).unwrap().to_string();
+                for entry in WalkDir::new(&path.trim()).max_depth(2).min_depth(2) {
+                    File::open("index.raw").unwrap();
+                    let entries = entry.unwrap().path().display().to_string().split_once(&path.trim()).map(|(_, entries)| entries).unwrap().to_string().split_once("/").map(|(_, remove)| remove).unwrap().to_string();
+                    writeln!(rawfile,"{}", entries).unwrap();
+                }
+            }
+        } else {
+            if Path::new("index.raw").exists() {
+                let question = Question::new("The index already exists, do you want to update it ? [y/n] : ")
+                    .yes_no()
+                    .until_acceptable()
+                    .default(Answer::YES)
+                    .show_defaults()
+                    .clarification("Please enter either 'yes' or 'no' ")
+                    .ask();
+                if question == Some(Answer::YES) {
+                    fs::remove_file("index.raw").unwrap();
+                    let mut rawfile = File::create("index.raw").context("This directory isn't usable as non-root, aborting")?;
+                    for entry in WalkDir::new(&path.trim()).max_depth(2).min_depth(2) {
+                        let entries = entry.unwrap().path().display().to_string().split_once(&path.trim()).map(|(_, entries)| entries).unwrap().to_string().split_once("/").map(|(_, remove)| remove).unwrap().to_string();
+                        let pkgfile = fs::read_to_string(&format!("{}/Pkgfile", entries)).unwrap();
+                        let mut content: Vec<String> = pkgfile.lines().map(|l| l.to_string()).collect();
+                        let version = content.iter().find(|version| version.starts_with("version")).unwrap().to_string();
+                        let release = content.iter().find(|release| release.starts_with("release")).unwrap().to_string();
+                        writeln!(rawfile, "{}", &format!("{}-{}-{}", entries, version, release));
+                    }
+                }
+            } else {
+                let mut rawfile = File::create("index.raw").context("This directory isn't usable as non-root, aborting")?;
+                for entry in WalkDir::new(&path.trim()).max_depth(2).min_depth(2) {
+                    let entries = entry.unwrap().path().display().to_string().split_once(&path.trim()).map(|(_, entries)| entries).unwrap().to_string().split_once("/").map(|(_, remove)| remove).unwrap().to_string();
                     let pkgfile = fs::read_to_string(&format!("{}/Pkgfile", entries)).unwrap();
                     let mut content: Vec<String> = pkgfile.lines().map(|l| l.to_string()).collect();
                     let version = content.iter().find(|version| version.starts_with("version")).unwrap().to_string();
@@ -76,6 +90,7 @@ pub fn index() -> Result <()> {
             }
 
         }
-    } 
+
+    }         
     Ok(())
 }

@@ -32,7 +32,7 @@ use std::process::Command;
 
 
 pub fn build(to_build: &str) -> Result<()> {
-    if let Some(root) = getconf() {
+    if let Ok(mode) = getconf() {
         let index = fs::read_to_string("index.raw").unwrap();
         let found = index.lines().find(|line| line.contains(to_build));
         if let Some(building) = found {
