@@ -189,7 +189,7 @@ pub fn package() -> Result<()> {
     }
     //let packagename = format!("{}", name);
     println!("Generating package");
-    let tar = File::create(format!("{}.{}.raw.tar.gz", name, version))?;
+    let tar = File::create(format!("{}.{}#1.raw.tar.gz", name, version))?;
     let enc = GzEncoder::new(tar, Compression::default());
     let mut a = tar::Builder::new(enc);
     a.follow_symlinks(false);

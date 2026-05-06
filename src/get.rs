@@ -34,7 +34,10 @@ pub fn get(pkg: &str) -> Result<()> {
     env::set_current_dir("/var/cache/").unwrap();
     let metadata = download(&format!("{}/metadata", url))?;
     if metadata.contains(&format!("{}", pkg)) {
-        let path = metadata.lines().find(|l| l.starts_with(&format!("{}-", pkg))).unwrap().to_string();
+        let version = metadata.split_once('.').map(|(_, version)| version).unwrap();
+        let release = metadata.split_once('#').map(|(_, release)| release).unwrap();
+        let path = metadata.lines().find(|l| l.ends_with(&format!("{}.{}#{}.raw.tar.gz", pkg, version, release))).unwrap().to_string();
+
         let tarball = download(&path)?;
         install(&tarball)?;
         let dependencies = depends(pkg);
