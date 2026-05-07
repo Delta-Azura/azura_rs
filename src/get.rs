@@ -34,10 +34,15 @@ pub fn get(pkg: &str) -> Result<()> {
     env::set_current_dir("/var/cache/").unwrap();
     let metadata = download(&format!("{}/index.raw", url))?;
     if metadata.contains(&format!("{}", pkg)) {
-        let version = metadata.split_once('.').map(|(_, version)| version).unwrap();
-        let release = metadata.split_once('#').map(|(_, release)| release).unwrap();
-        let path = metadata.lines().find(|l| l.ends_with(&format!("{}.{}#{}.raw.tar.gz", pkg, version, release))).unwrap().to_string();
-
+        let rawpkg = metadata.lines().any(|l| l.contains(&format!("/{}_", pkg)));
+        if rawpkg != true {
+            println!("Package doesn't exists");
+            std::process::exit(1)
+        }
+        let line = metadata.lines().find(|l| l.contains(&format!("/{}_", pkg))).unwrap();
+        let version = line.split_once('_').map(|(_, version)| version).unwrap().split_once('#').map(|(version, _)| version).unwrap();
+        let release = line.split_once('#').map(|(_, release)| release).unwrap();
+        let path = format!("{}/{}.{}#{}.raw.tar.gz", url, pkg, version, release);
         let tarball = download(&path)?;
         install(&tarball)?;
         let dependencies = depends(pkg);

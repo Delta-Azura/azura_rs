@@ -75,7 +75,7 @@ pub fn index() -> Result <()> {
                         let mut content: Vec<String> = pkgfile.lines().map(|l| l.to_string()).collect();
                         let version = content.iter().find(|version| version.starts_with("version")).unwrap_or(&"version=unknown".to_string()).to_string().split_once("version=").map(|(_, version)| version).unwrap().to_string();
                         let release = content.iter().find(|release| release.starts_with("release")).unwrap_or(&"release=1".to_string()).to_string().split_once("release=").map(|(_, version)| version).unwrap().to_string();
-                        writeln!(rawfile, "{}", &format!("{}-{}#{}", entries, version, release));
+                        writeln!(rawfile, "{}", &format!("{}_{}#{}", entries, version, release));
                     }
                 }
             } else {
@@ -87,7 +87,7 @@ pub fn index() -> Result <()> {
                     let mut content: Vec<String> = pkgfile.lines().map(|l| l.to_string()).collect();
                     let version = content.iter().find(|version| version.starts_with("version")).unwrap_or(&"version=unknown".to_string()).to_string().split_once("version=").map(|(_, version)| version).unwrap().to_string();
                     let release = content.iter().find(|release| release.starts_with("release")).unwrap_or(&"release=unknown".to_string()).to_string().split_once("release=").map(|(_, version)| version).unwrap().to_string();
-                    writeln!(rawfile, "{}", &format!("{}-{}-{}", entries, version, release));
+                    writeln!(rawfile, "{}", &format!("{}_{}#{}", entries, version, release));
                 }
             }
 
