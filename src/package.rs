@@ -56,7 +56,7 @@ pub fn package() -> Result<()> {
         }
     }
     let output = Command::new("bash")
-        .args(["-c", "source Pkgfile && echo $version && echo $name && echo $packager && echo $release && echo $description && echo ${source[@]}"])
+        .args(["-c", "source Pkgfile && echo $version && echo $name && echo $packager && echo $release && echo $description && echo $depends && echo ${source[@]}"])
         .output()
         .unwrap();
     let stdout = String::from_utf8(output.stdout).unwrap();
@@ -66,6 +66,7 @@ pub fn package() -> Result<()> {
     let packager = variables.next().unwrap();
     let release = variables.next().unwrap();
     let description = variables.next().unwrap();
+    let depends = variables.next().unwrap();
     let source = variables.next().unwrap();
     //let makedepends = variables.next().unwrap();
     //if makedepends == "none" {
@@ -83,7 +84,7 @@ pub fn package() -> Result<()> {
     let collection = collection.display().to_string();
     println!("Setting collection as : {}", col);
     let mut meta = File::create("META").unwrap();
-    let metadata = format!("N{}\nV{}\nr{}\nc{}\nD{}\nP{}", name, version, release, col, description, packager);
+    let metadata = format!("N{}\nV{}\nr{}\nc{}\nD{}\nP{}\nR{}\n", name, version, release, col, description, packager, depends);
     write!(meta, "{}", metadata).unwrap();
     if Path::new("work").exists() {
         println!("Removing work/");

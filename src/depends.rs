@@ -39,19 +39,16 @@ pub fn depends(pkg: &str) -> Vec<String> {  //-> Result<(), String> {
             println!("{} isn't installed", rawpkg);
             std::process::exit(1)
         }
-        let META = std::fs::read_to_string(format!("/var/lib/pkg/DB/{}/META", rawpkg));
-        for i in META.unwrap().lines().filter(|l| l.starts_with('R')) {
-            if i.is_empty() {
-                continue
+        let META = std::fs::read_to_string(format!("/var/lib/pkg/DB/{}/META", rawpkg)).unwrap();
+        let meta = META.lines().find(|l| l.starts_with("R")).unwrap().split_once('R').map(|(_, meta)| meta).unwrap();
+        let dependencies : Vec<&str> =  meta.split_whitespace().collect();
+        for i in dependencies.iter() {
+            if !visited.contains(*i) {
+                println!("{}", i);
+                stack.push(i.to_string());
             }
-            if let Some((_, deps)) = i.split_once('R') {
-                for dep in deps.lines() {
-                    let name = dep.trim_end_matches(|c: char| c.is_numeric());
-                    if !visited.contains(name) {
-                        stack.push(name.to_string());
-                        //println!("pushing {}", name);
-                    }
-                }
+
+        }
                // for e in name.lines() {
                     //if Path::new(format!("/var/lib/pkg/DB/{}", e)).exists() {
                     //    println!("{} is already installed", e);
@@ -61,12 +58,11 @@ pub fn depends(pkg: &str) -> Vec<String> {  //-> Result<(), String> {
                     //}    //env::set_current_dir(format!("/var/lib/pkg/DB/{}", e))
                 //}
                 //println!("{}", name);
-            }
-        }
         //println!("{}", rawpkg);
     }
     //return stack.to_string()
     //println!("{}", rawpkg);
     //Ok(())
+    //println!("{}", stack);
     return stack
 }
